@@ -9,15 +9,14 @@
             <div class="panel-heading"><strong>Instructions</strong></div>
 
             <div class="panel-body">
-                <p>Draw a dot at the location of head:</p>
+                <p>Place a marker at the specified location for each column and answer related task questions:</p>
 
                 <ol>
-                    <li>Finding the Head of the copepods. Move the mouse to the location of the head.</li>
-                    <li>Annotate the location by clicking the left mouse. Please do NOT draw a large box. Only a small dot at the location of Head will be approved. Only one location is required, please do not draw multiple dot.</li>
-                    <li>A good example of annotation can be find at:<a href="https://goo.gl/3iscbB">https://goo.gl/3iscbB</a>.</li>
-                    <li>Head location can sometimes be hard to distinguish. To find antennas of the copepods, and then the head will be under and between the two antennas.</li>
-                    <li>The tail may look like antenna but tail is generally smooth while antenna has root-like structure.&nbsp;</li>
-                    <li>Here are some challenging images:&nbsp;<a href="https://goo.gl/H2ceCh">https://goo.gl/H2ceCh</a>. Please take a look and use as a guidance.</li>
+                    <li>Finding the head of the biological specimen, move mouse to the location over the image in the first column.</li>
+                    <li>Annotate the location by clicking the left mouse. If the head/tail is out of frame, select the "Out of Frame" option.</li>
+                    <li>Repeat steps 1 and 2 for the tail of the specimen in the second column.</li>
+                    <li>Determine the z direction of the column in column 3. If you are unsure of the direction, choose "Not Sure".</li>
+                    <li>In the last column, select the level of confidence with your identification of the head and tail, given the three options.</li>
                 </ol>
             </div>
         </div>
@@ -28,9 +27,9 @@
 </section>
 <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet"><script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script><script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"></script>
 <div style="display:inline-block;vertical-align:top;">
-    <h1>Draw a dot by clicking the mouse on the following area: </h1>
+    <h1>Place a marker by clicking the mouse over the following area and answer related task questions: </h1>
 
-    <p>Draw a dot using your mouse over each object that matches the search criteria "". Then submit.</p>
+    <p>Place a marker using your mouse over each object that matches the location criteria for each image in each row (8 rows per page). Click submit after page is completed.</p>
 
     <div class="container">
         <table class="table">
@@ -40,201 +39,264 @@
                 <th>Head Position</th>
                 <th>Tail Position</th>
                 <th>Z Direction</th>
+                <th>Confidence Score</th>
             </tr>
             </thead>
             <tbody>
 
             <tr>
                 <th scope="row">ex</th>
-                <td colspan="3">
+                <td colspan="4">
                     <img class="img-responsive" src="example.png">
                 </td>
             </tr>
 
-            <tr>
+            <tr><!--Row 1 -->
                 <th scope="row">1</th>
                 <td>
                     <div class="div-images" id="div-images-head-1">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362791-000690-002-560-800-151-216-.png" width="200">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <div class="div-images" id="div-images-tail-1">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362791-000690-002-560-800-151-216-.png" width="200">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <form class="btn-group-vertical">
                         <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
                         <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
                         <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+            </tr>
+            <tr><!--Row 1 -->
+                <th scope="row">2</th>
+                <td>
+                    <div class="div-images" id="div-images-head-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
+                    </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
+                </td>
+                <td>
+                    <div class="div-images" id="div-images-tail-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
+                    </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
                         <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
                     </form>
                 </td>
             </tr>
 
-            <tr>
-                <th scope="row">2</th>
-                <td>
-                    <div class="div-images" id="div-images-head-2">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362799-000732-002-508-796-203-120-.png" width="200">
-                    </div>
-                </td>
-                <td>
-                    <div class="div-images" id="div-images-tail-2">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362799-000732-002-508-796-203-120-.png" width="200">
-                    </div>
-                </td>
-                <td>
-                    <form class="btn-group-vertical">
-                        <div class="radio"><label><input type="radio" name="specimen-radio-2" value="Parallel">Parallel</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-2" value="Facing Camera">Facing Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-2" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-2" value="Out of Frame">Out of Frame</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-2" value="Not Sure">Not Sure</label></div>
-                    </form>
-                </td>
-            </tr>
-
-            <tr>
+            <tr><!--Row 3 -->
                 <th scope="row">3</th>
                 <td>
-                    <div class="div-images" id="div-images-head-3">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362801-000742-001-488-900-223-88-.png" width="200">
+                    <div class="div-images" id="div-images-head-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
-                    <div class="div-images" id="div-images-tail-3">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362801-000742-001-488-900-223-88-.png" width="200">
+                    <div class="div-images" id="div-images-tail-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <form class="btn-group-vertical">
-                        <div class="radio"><label><input type="radio" name="specimen-radio-3" value="Parallel">Parallel</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-3" value="Facing Camera">Facing Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-3" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-3" value="Out of Frame">Out of Frame</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-3" value="Not Sure">Not Sure</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
                     </form>
                 </td>
             </tr>
 
-            <tr>
+            <tr><!--Row 4 -->
                 <th scope="row">4</th>
                 <td>
-                    <div class="div-images" id="div-images-head-4">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487363026-001866-001-272-2140-216-40-.png" width="200">
+                    <div class="div-images" id="div-images-head-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
-                    <div class="div-images" id="div-images-tail-4">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487363026-001866-001-272-2140-216-40-.png" width="200">
+                    <div class="div-images" id="div-images-tail-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <form class="btn-group-vertical">
-                        <div class="radio"><label><input type="radio" name="specimen-radio-4" value="Parallel">Parallel</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-4" value="Facing Camera">Facing Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-4" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-4" value="Out of Frame">Out of Frame</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-4" value="Not Sure">Not Sure</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
                     </form>
                 </td>
             </tr>
 
-            <tr>
+            <tr><!--Row 5 -->
                 <th scope="row">5</th>
                 <td>
-                    <div class="div-images" id="div-images-head-5">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362924-001355-000-172-2568-192-72-.png" width="200">
+                    <div class="div-images" id="div-images-head-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
-                    <div class="div-images" id="div-images-tail-5">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362924-001355-000-172-2568-192-72-.png" width="200">
+                    <div class="div-images" id="div-images-tail-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <form class="btn-group-vertical">
-                        <div class="radio"><label><input type="radio" name="specimen-radio-5" value="Parallel">Parallel</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-5" value="Facing Camera">Facing Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-5" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-5" value="Out of Frame">Out of Frame</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-5" value="Not Sure">Not Sure</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
                     </form>
                 </td>
             </tr>
 
-            <tr>
+            <tr><!--Row 6 -->
                 <th scope="row">6</th>
                 <td>
-                    <div class="div-images" id="div-images-head-6">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362987-001670-000-532-2608-160-95-.png" width="200">
+                    <div class="div-images" id="div-images-head-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
-                    <div class="div-images" id="div-images-tail-6">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362987-001670-000-532-2608-160-95-.png" width="200">
+                    <div class="div-images" id="div-images-tail-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <form class="btn-group-vertical">
-                        <div class="radio"><label><input type="radio" name="specimen-radio-6" value="Parallel">Parallel</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-6" value="Facing Camera">Facing Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-6" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-6" value="Out of Frame">Out of Frame</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-6" value="Not Sure">Not Sure</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
                     </form>
                 </td>
             </tr>
 
-            <tr>
+            <tr><!--Row 7 -->
                 <th scope="row">7</th>
                 <td>
-                    <div class="div-images" id="div-images-head-7">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362843-000951-000-492-1908-219-152-.png" width="200">
+                    <div class="div-images" id="div-images-head-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
-                    <div class="div-images" id="div-images-tail-7">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362843-000951-000-492-1908-219-152-.png" width="200">
+                    <div class="div-images" id="div-images-tail-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <form class="btn-group-vertical">
-                        <div class="radio"><label><input type="radio" name="specimen-radio-7" value="Parallel">Parallel</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-7" value="Facing Camera">Facing Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-7" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-7" value="Out of Frame">Out of Frame</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-7" value="Not Sure">Not Sure</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
                     </form>
                 </td>
             </tr>
 
-            <tr>
+            <tr><!--Row 8 -->
                 <th scope="row">8</th>
                 <td>
-                    <div class="div-images" id="div-images-head-8">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362922-001346-000-120-2624-176-79-.png" width="200">
+                    <div class="div-images" id="div-images-head-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url1} width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
-                    <div class="div-images" id="div-images-tail-8">
-                        <img alt="Placeholder" class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362922-001346-000-120-2624-176-79-.png" width="200">
+                    <div class="div-images" id="div-images-tail-1">
+                        <img alt="Placeholder" class="img-responsive" height="200" src=${img_url2}  width="200">
                     </div>
+                    <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Out of Frame">Out of Frame</label></div>
                 </td>
                 <td>
                     <form class="btn-group-vertical">
-                        <div class="radio"><label><input type="radio" name="specimen-radio-8" value="Parallel">Parallel</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-8" value="Facing Camera">Facing Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-8" value="Back to Camera">Back to Camera</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-8" value="Out of Frame">Out of Frame</label></div>
-                        <div class="radio"><label><input type="radio" name="specimen-radio-8" value="Not Sure">Not Sure</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Parallel" value="Parallel">Parallel</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Facing Camera">Facing Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Back to Camera">Back to Camera</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
+                    </form>
+                </td>
+                <td>
+                    <form class="btn-group-vertical">
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Very Confident">Very Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Somewhat Confident">Somewhat Confident</label></div>
+                        <div class="radio"><label><input type="radio" name="specimen-radio-1" value="Not Sure">Not Sure</label></div>
                     </form>
                 </td>
             </tr>
-
             <tr>
                 <td></td>
                 <td></td>
