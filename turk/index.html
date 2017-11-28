@@ -46,15 +46,9 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <th scope="row">ex</th>
-                <td colspan="3">
-                    <img class="img-responsive" src="example.png">
-                </td>
-            </tr>
 
-            <tr><!--Row 0-->
-                <th scope="row">0</th>
+            <tr><!--Row 1-->
+                <th scope="row">1</th>
                 <td>
                     <div class="div-images" id="div-images-head-0">
                         <img alt="Placeholder" id='image-head-0' class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362791-000690-002-560-800-151-216-.png" width="200">
@@ -86,8 +80,8 @@
 
 
 
-            <tr><!--Row 1-->
-                <th scope="row">1</th>
+            <tr><!--Row 2-->
+                <th scope="row">2</th>
                 <td>
                     <div class="div-images" id="div-images-head-1">
                         <img alt="Placeholder" id='image-head-1' class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362799-000732-002-508-796-203-120-.png" width="200">
@@ -119,8 +113,8 @@
 
 
 
-            <tr><!--Row 2-->
-                <th scope="row">2</th>
+            <tr><!--Row 3-->
+                <th scope="row">3</th>
                 <td>
                     <div class="div-images" id="div-images-head-2">
                         <img alt="Placeholder" id='image-head-2' class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362801-000742-001-488-900-223-88-.png" width="200">
@@ -152,8 +146,8 @@
 
 
 
-            <tr><!--Row 3-->
-                <th scope="row">3</th>
+            <tr><!--Row 4-->
+                <th scope="row">4</th>
                 <td>
                     <div class="div-images" id="div-images-head-3">
                         <img alt="Placeholder" id='image-head-3' class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487363026-001866-001-272-2140-216-40-.png" width="200">
@@ -185,8 +179,8 @@
 
 
 
-            <tr><!--Row 4-->
-                <th scope="row">4</th>
+            <tr><!--Row 5-->
+                <th scope="row">5</th>
                 <td>
                     <div class="div-images" id="div-images-head-4">
                         <img alt="Placeholder" id='image-head-4' class="img-responsive" height="200" src="http://www.svcl.ucsd.edu/~morgado/plankton_turk/ClassA/Acartiidae_specimen00/SPCBench-1487362924-001355-000-172-2568-192-72-.png" width="200">
@@ -291,6 +285,8 @@
             if (checkbox.prop("checked")) {
                 clear_canvas(ctx);
                 submission[idx][label] = 'out of frame';
+                submission[idx].width = canvas.width();
+                submission[idx].height = canvas.height();
             }
             check_submission();
         });
