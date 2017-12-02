@@ -1,6 +1,6 @@
 http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Acartiidae.png
 http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Appendicularia.png
-http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura00.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura.png
 http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura_specimen05.png
 http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura_specimen06.png
 http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Calanidae.png
