@@ -1,0 +1,10 @@
+Place a dot at the specified location for each column and answer the third column based on the direction of the biological specimen:
+
+1. Finding the head of the specimen, move mouse to the location.
+2. Annotate the location by clicking the left mouse. A small dot will be dropped at the location of the mouse
+3. Repeat steps 1 and 2 for the tail of the specimen in the second column
+4. Fill an answer choice in column 3
+
+README Notes
+- An example of the annotation for each specimen is given in the first row.
+- Each image below is of the same specimen.

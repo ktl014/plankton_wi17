@@ -1,0 +1,35 @@
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Acartiidae.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Appendicularia.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura_specimen05.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura_specimen06.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Calanidae.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Calanoida.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Cydippida.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Diphyinae.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Euphausiidae.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Euphausiidae_specimen03.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Gammaridae.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen00.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen01.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen02.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen03.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen04.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen05.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen06.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen07.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen08.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen09.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen10.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen11.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen12.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Mysida.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Oithonidae.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Ostracoda.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Poecilostomatoida.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Polychaeta Larvae I.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Polychaeta Larvae Ii.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Polychaeta.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Pontellidae.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Saggittoidea.png
+http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Toranidae.png

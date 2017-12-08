@@ -1,0 +1,676 @@
+
+<html><head>
+  <title>SVCL Plankton</title>
+</head>
+<body>
+<link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet">
+<section class="container" id="Other" style="margin-bottom:15px; padding: 10px 10px; font-family: Verdana, Geneva, sans-serif; color:#333333; font-size:0.9em;">
+  <div class="row col-xs-12 col-md-12"><!-- Instructions -->
+    <div class="panel panel-primary">
+      <div class="panel-heading"><strong>Instructions:</strong></div>
+
+      <div class="panel-body">
+        <p>Mark the <b>Head</b> and <b>Tail</b> positions for each image and answer image-related questions</p>
+
+        <ol>
+          <li>Find the head of the biological specimen in the column "Head Position"</li>
+          <ul>
+            <li>Place a marker on the head with a (left-) click of your mouse.</li>
+            <li>If the head is out of frame, select the "Out of Frame" option, instead.</li>
+            <li>Refer to the example to distinguish head from tail.</li>
+          </ul>
+          <li>Find the tail of the biological specimen in the column "Tail Position"</li>
+          <ul>
+            <li>Repeat step 1) for the tail</li>
+          </ul>
+          <li>Determine orientation of the specimen in column "Orientation"</li>
+          <ul>
+            <li>Select "Leaning toward camera" if head is closer to the camera than tail, or "Leaning away from camera" otherwise.</li>
+            <li>Select "Parallel" if at roughly the same distance.</li>
+            <li>Select "Not Sure" if you are unsure of specimen orientation.</li>
+          </ul>
+          <li>Select the camera focus of the "Head" and "Tail" images in column "Focus".</li>
+          <li>Select the level of confidence of your "Head" and "Tail" annotations in column "Confidence Score".</li>
+          <li>Click submit after HIT is complete.</li>
+        </ol>
+        <p>NOTE: If the cursor does not appear over the image, refresh the page to fix it.</p>
+
+        <p><b>Example: </b></p>
+      </div>
+      <img class="img-responsive" src=${example_img}>
+
+    </div>
+    <!-- End Instructions --><!-- Content Body -->
+
+    <div style="display:none;">&nbsp;</div>
+  </div>
+</section>
+<link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet"><script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script><script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"></script>
+<div style="display:inline-block;vertical-align:top;">
+  <h1>Mark the head and tail positions for each image and answer image-related questions: </h1>
+
+  <p>Place a marker using your mouse over each object that matches the location criteria for each image in each row (5 rows per page). Click submit after HIT is completed.</p>
+
+  <div class="container">
+    <table class="table">
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Head Position</th>
+        <th>Tail Position</th>
+        <th>Z Direction</th>
+        <th>Focus</th>
+        <th>Confidence Score</th>
+      </tr>
+      </thead>
+      <tbody>
+
+        
+
+        <tr><!--Row 1-->
+          <th scope="row">1</th>
+          <td>
+            <div class="div-images" id="div-images-head-0">
+              <img alt="Placeholder" src="{img_url1-head}" id='image-head-0' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-0" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-0">
+              <img alt="Placeholder" src="{img_url1-tail}" id='image-tail-0' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-0" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-0" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-0" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-0" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-0" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-0" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-0" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-0" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-0" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-0" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-0" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 2-->
+          <th scope="row">2</th>
+          <td>
+            <div class="div-images" id="div-images-head-1">
+              <img alt="Placeholder" src="{img_url2-head}" id='image-head-1' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-1" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-1">
+              <img alt="Placeholder" src="{img_url2-tail}" id='image-tail-1' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-1" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-1" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-1" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-1" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-1" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-1" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-1" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-1" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-1" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-1" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-1" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 3-->
+          <th scope="row">3</th>
+          <td>
+            <div class="div-images" id="div-images-head-2">
+              <img alt="Placeholder" src="{img_url3-head}" id='image-head-2' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-2" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-2">
+              <img alt="Placeholder" src="{img_url3-tail}" id='image-tail-2' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-2" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-2" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-2" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-2" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-2" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-2" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-2" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-2" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-2" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-2" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-2" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 4-->
+          <th scope="row">4</th>
+          <td>
+            <div class="div-images" id="div-images-head-3">
+              <img alt="Placeholder" src="{img_url4-head}" id='image-head-3' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-3" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-3">
+              <img alt="Placeholder" src="{img_url4-tail}" id='image-tail-3' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-3" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-3" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-3" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-3" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-3" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-3" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-3" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-3" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-3" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-3" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-3" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 5-->
+          <th scope="row">5</th>
+          <td>
+            <div class="div-images" id="div-images-head-4">
+              <img alt="Placeholder" src="{img_url5-head}" id='image-head-4' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-4" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-4">
+              <img alt="Placeholder" src="{img_url5-tail}" id='image-tail-4' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-4" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-4" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-4" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-4" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-4" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-4" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-4" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-4" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-4" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-4" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-4" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 6-->
+          <th scope="row">6</th>
+          <td>
+            <div class="div-images" id="div-images-head-5">
+              <img alt="Placeholder" src="{img_url6-head}" id='image-head-5' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-5" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-5">
+              <img alt="Placeholder" src="{img_url6-tail}" id='image-tail-5' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-5" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-5" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-5" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-5" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-5" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-5" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-5" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-5" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-5" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-5" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-5" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 7-->
+          <th scope="row">7</th>
+          <td>
+            <div class="div-images" id="div-images-head-6">
+              <img alt="Placeholder" src="{img_url7-head}" id='image-head-6' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-6" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-6">
+              <img alt="Placeholder" src="{img_url7-tail}" id='image-tail-6' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-6" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-6" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-6" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-6" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-6" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-6" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-6" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-6" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-6" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-6" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-6" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 8-->
+          <th scope="row">8</th>
+          <td>
+            <div class="div-images" id="div-images-head-7">
+              <img alt="Placeholder" src="{img_url8-head}" id='image-head-7' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-7" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-7">
+              <img alt="Placeholder" src="{img_url8-tail}" id='image-tail-7' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-7" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-7" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-7" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-7" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-7" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-7" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-7" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-7" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-7" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-7" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-7" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 9-->
+          <th scope="row">9</th>
+          <td>
+            <div class="div-images" id="div-images-head-8">
+              <img alt="Placeholder" src="{img_url9-head}" id='image-head-8' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-8" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-8">
+              <img alt="Placeholder" src="{img_url9-tail}" id='image-tail-8' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-8" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-8" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-8" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-8" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-8" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-8" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-8" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-8" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-8" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-8" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-8" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr><!--Row 10-->
+          <th scope="row">10</th>
+          <td>
+            <div class="div-images" id="div-images-head-9">
+              <img alt="Placeholder" src="{img_url10-head}" id='image-head-9' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-head-9" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <div class="div-images" id="div-images-tail-9">
+              <img alt="Placeholder" src="{img_url10-tail}" id='image-tail-9' class="img-responsive" height="200" width="200">
+            </div>
+            <div class="checkbox"><label><input type="checkbox" id="outframe-checkbox-tail-9" value="Out of Frame">Out of Frame</label></div>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-9" value="Parallel">Parallel</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-9" value="Leaning toward camera">Leaning toward camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-9" value="Leaning away from camera">Leaning away from camera</label></div>
+              <div class="zaxis-radio"><label><input type="radio" name="zaxis-radio-9" value="Not Sure">Not Sure</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-9" value="In focus">In focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-9" value="Slightly out of focus">Slightly out of focus</label></div>
+              <div class="focus-radio"><label><input type="radio" name="focus-radio-9" value="Out of focus">Out of focus</label></div>
+            </form>
+          </td>
+          <td>
+            <form class="btn-group-vertical">
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-9" value="Very Confident">Very Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-9" value="Confident">Confident</label></div>
+              <div class="confidence-radio"><label><input type="radio" name="confidence-radio-9" value="Not Confident">Not Confident</label></div>
+            </form>
+          </td>
+        </tr>
+
+        
+
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>
+                <p id="button_paragraph">
+                    <input id="annotation_data" name="annotation_data" type="hidden">
+                    <input id="submit_button" class="btn btn-default" type="submit">
+                </p>
+            </td>
+        </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+  <p id="result-paragraph"></p>
+
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+//        initialization();
+        var submission = [];
+        var labels = ['head', 'tail'];
+        var rows = Math.floor($('.div-images').length / 2);
+
+        for (var i = 0; i < rows; i++) {
+            for (var label of labels) {
+                var img = $('#image-' + label + '-' + i);
+                var container = $('#div-images-' + label + '-' + i);
+                var canvas = $("<canvas/>");
+                canvas.attr({
+                    id: 'canvas-' + label + '-' + i,
+                    class: 'img-canvas',
+                    width: img[0].width,
+                    height: img[0].height
+                });
+                container.prepend(canvas[0]);
+            }
+            submission.push({url: img.attr('src')});
+        }
+
+        $('.img-canvas').on("mousedown", function(e) {
+            var canvas = $(e.target);
+            var split_id = canvas.attr('id').split('-');
+            var idx = parseInt(split_id[2]),
+                label = split_id[1];
+            var offset = canvas.offset();
+            var x = Math.round(e.pageX - offset.left),
+                y = Math.round(e.pageY - offset.top);
+            var ctx = canvas[0].getContext('2d');
+            clear_canvas(ctx);
+            draw_point(ctx, x, y, label);
+            submission[idx][label] = {
+                x: x,
+                y: y
+            };
+            submission[idx].width = canvas.width();
+            submission[idx].height = canvas.height();
+            $('#outframe-checkbox-' + label + '-' + idx).prop("checked", false);
+            check_submission();
+        });
+
+        $('.checkbox').change(function(e) {
+            var checkbox = $(e.target);
+            var split_id = checkbox.attr('id').split('-');
+            var idx = parseInt(split_id[3]),
+                label = split_id[2];
+            var canvas = $('#canvas-' + label + '-' + idx),
+                ctx = canvas[0].getContext('2d');
+            if (checkbox.prop("checked")) {
+                clear_canvas(ctx);
+                submission[idx][label] = 'out of frame';
+                submission[idx].width = canvas.width();
+                submission[idx].height = canvas.height();
+            }
+            check_submission();
+        });
+
+        $(".zaxis-radio").change(function(e) {
+            var radio = $(e.target),
+                idx = parseInt(radio.attr('name').split('-')[2]);
+
+            submission[idx]['z-dir'] = radio.val();
+            check_submission();
+        });
+
+        $('.confidence-radio').change(function(e) {
+            var radio = $(e.target),
+                idx = parseInt(radio.attr('name').split('-')[2]);
+
+            submission[idx]['confidence'] = radio.val();
+            check_submission();
+        });
+
+        $('.focus-radio').change(function(e) {
+            var radio = $(e.target),
+                idx = parseInt(radio.attr('name').split('-')[2]);
+
+            submission[idx]['focus'] = radio.val();
+            check_submission();
+        });
+
+        $('#submit_button').click(function(e) {
+            if (check_submission()) {
+                $('#result-paragraph').text(JSON.stringify(submission));
+            }
+        });
+
+        function check_submission() {
+            var submit_button = $('#submit_button');
+            submit_button.prop("disabled", true);
+            for (var i = 0; i < rows; i++) {
+                if (Object.keys(submission[i]).length != 8)
+                    return false;
+            }
+            submit_button.prop("disabled", false);
+            return true;
+        }
+    });
+
+    function initialization() {
+        var img_urls =
+            ['http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Acartiidae.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Appendicularia.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura00.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura_specimen05.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Brachyura_specimen06.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Calanidae.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Calanoida.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Cydippida.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Diphyinae.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Euphausiidae.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Euphausiidae_specimen03.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Gammaridae.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen00.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen01.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen02.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen03.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen04.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen05.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen06.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen07.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen08.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen09.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen10.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen11.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Hydromedusae_specimen12.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Mysida.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Oithonidae.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Ostracoda.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Poecilostomatoida.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Polychaeta Larvae I.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Polychaeta Larvae Ii.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Polychaeta.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Pontellidae.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Saggittoidea.png',
+            'http://www.svcl.ucsd.edu/~morgado/plankton_turk/annotationSample/Turk-headAndtail/Toranidae.png'];
+        for (var i = 0; i < img_urls.length; i++) {
+            $('#image-head-' + i).attr('src', img_urls[i]);
+            $('#image-tail-' + i).attr('src', img_urls[i]);
+        }
+    }
+
+    function clear_canvas(ctx) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    function draw_point(ctx, xoff, yoff, label) {
+        var radius = 6;
+        var pin_height = 12;
+        ctx.strokeStyle = "cyan";
+        ctx.lineWidth = 2;
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.moveTo(xoff, yoff);
+        ctx.lineTo(xoff, yoff - pin_height);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.arc(xoff, yoff - pin_height - radius, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "8pt sans-serif";
+        ctx.fillText(label[0].toUpperCase(), xoff, yoff - pin_height - radius);
+        return [xoff, yoff];
+    }
+</script>
+
+<style type="text/css">
+  canvas {
+      position: absolute;
+      z-index: 1;
+      cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAOISURBVEiJpVZPSCNnFP9NNxQKqzHQhpIIkWIy9M9CxFvGmkRTrTrgobKzQcQlpSwkp9jotlBYoQfZGlcvya2gSOLM4qmOSttgxkPOiYdtHbMHAzaHuBCzLtgubV8PG7vJMPlT%2BoOBebz3vd%2F73vve%2Bz5GPN5BKwgs7wFwF0APgFMA65IqKy0XAjC0YwTAwzDMbPXfTUSnANoieKNNgo4W8n8nEFj%2BxoiZ%2B6acPrsIBoNzFosFAGCxWBAMBuculN%2FKn7778VcCyzcNUlcpsDx7cHBw5HK5vt3f3zc6HI6rRCJRBIBEIlF0OBxXe3t7XS6Xa0lRlJzA8o6GDOLxTt1HRB9Go9E%2FrFYrJZPJcyIaISKGiBYBEBEtVuWRZDJ5brVaKRqN%2Fk5EDq0v8XinvsgCy984PDx8vLa29mYmk9mz2Wx3JFW%2BrOr%2BtZNUmQD85Pf733O5XCLHceP9%2Ff3bgod3Sqr8d8MUVSqVhVAo9MHq6uq5zWbzXztvBEmVL202253l5eVnoVDoVqVSWWhag42Njft2ux1TU1Mzkio%2Fb%2Ba8lsTv90%2F39vZCFMX7Wr2h2kQeAB2BhwEjx3EvJFX%2BUceXQkSA%2Fvn%2F2ev1Xh0dHXXF791bAXAJQJFUWWGIaP26icxmM5LJ5Nnw8PD3Wue1nVsT1GsDRflienraUiwWAQBEtCGp8l0DXrU%2FAKBUKsHn83UDeFC7WCdyD8MwdTY66AFejYpTAO5WO9DKVdKGO6j6hQHAenW2dAQCgblsNtv1rPtqURtOTVqu06XU6JhcLrcwOTmJeDz%2BCNUaAICh1tjpdH6eSqWMP0QiozqF9jAM86BBoT9Jp9NvjY2NVSRV%2FrJWUXdMZ2ZmVvL5PERR3BRYvlO7Cz0ILN%2BxtbWVODk5gSAIUa2%2BjsBkMi3F4%2FFfI5HIO4VCYasVicDynYVCQZyfn387Fos9MZlMS00JJFX%2B0%2Bv13g6Hwy85jhsXRfGpwPKjDZyPbm9vPx0YGBgPh8Mvh4aGPpNU%2BS%2BtHaN3owks%2F1E6nX4cDAbft9vtGBwcfNHX13fh8%2Fm6U6nUWTab7cpkMjfz%2BTxisdgvbrf7tqTKT%2FQC0SWokhjK5fLXm5ubkVwu17m7u4tSqQSz2YyJiQk4nc7K7OzsQ6PR%2BJ1e5C0JNGQrDMPMXctE9Eh7Whqh3StTO1WbTtlatHvpK0TUg9evCqVdgrZS9H%2FwD9NfrUmtcqn3AAAAAElFTkSuQmCC) 11 11, crosshair;
+  }
+</style>
+
+</body>
+</html>
