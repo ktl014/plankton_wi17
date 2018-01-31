@@ -15,8 +15,15 @@ def main():
         data = read_csv(csv_file)
     framecount = []
     focuscount = []
-    specimenList = sorted(list(set(d['specimen'] for d in data)))
-    ind = [i for i,d in enumerate(data) if d['specimen'] == specimenList[0]]
+    spec = sorted(list(set(d['specimen'] for d in data)))
+    specimen = dict(zip(spec,range(len(spec))))
+    for i in specimen.iterkeys():
+        ind = []
+        for j, d in enumerate(data):
+            if d['specimen'] == i:
+                ind.append(j)
+        specimen[i] = ind
+#    ind = [i for i,d in enumerate(data) if d['specimen'] == specimenList[0]]
     fig = plt.figure()
     ax = fig.add_subplot(111, autoscale_on=False, xlim=(0, 255), ylim=(0, 255))
     for i in range(len(ind)):
@@ -28,6 +35,8 @@ def main():
             xytext=(128, 128),
             arrowprops=dict(arrowstyle="->", color='r', lw=1))
     fig.savefig(specimenList[0]+'.png')
+    
+    
 #        if d['head'] == 'out of frame' and d['tail'] == 'out of frame':
 #            framecount.append(i)
 #        if d['focus'] == 'Slightly out of focus':
