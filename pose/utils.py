@@ -20,7 +20,7 @@ def filter_results(results):
                     ex: [{head: {x:1, y:1}, tail: {x:12, y:21}, others:etc}, ...]
     :return: the best coordinates
     """
-    results = [r for r in results]
+    results = [r for r in results if r['head'] != 'out of frame' and r['tail'] != 'out of frame']
     while len(results) > 1:
         avg_x_head = np.mean([r['head']['x'] for r in results])
         avg_y_head = np.mean([r['head']['y'] for r in results])
@@ -32,4 +32,4 @@ def filter_results(results):
                  (r['tail']['y'] - avg_y_tail) ** 2 for r in results]
         idx = int(np.argmax(dists))
         results.remove(results[idx])
-    return results[0]
+    return results[0] if results else None
