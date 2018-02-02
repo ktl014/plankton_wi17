@@ -9,6 +9,8 @@ def read_csv(csv_file):
         datum = eval(row['Answer.annotation_data'])
         for d in datum:
             d['img_file'] = 'images/' + d['url'].split('/')[-1]
+            d['specimen'] = d['url'].split('/')[5]
+            d['class'] = d['specimen'].split('_')[0]
             data.append(d)
     return data
 
