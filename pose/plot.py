@@ -6,6 +6,7 @@ Created on Tue Jan 30 22:53:12 2018
 @author: ktl014
 """
 from utils import *
+from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -16,13 +17,24 @@ def main():
     batch0 = 'Batch_3084800_batch_results.csv'
     batch1 = 'batchResults/Batch_180498_batch_results.csv'
     batch2 = 'batchResults/Batch_180520_batch_results.csv'
-    with open(batch2, 'r') as csv_file:
+    with open(batch0, 'r') as csv_file:
         data = read_csv(csv_file)
+    image_data = defaultdict(list)
+    for d in data:
+        img_name = d['url'].split('/')[-1]
+        image_data[img_name].append(d)
+    results = []
+    for image in image_data:
+        r = filter_results(image_data[image])
+        if r is not None:
+            results.append(r)
 
     spec = sorted(list(set(d['specimen'] for d in data)))
     clas = sorted(list(set(d['class'] for d in data)))
     specimen = dict(zip(spec,range(len(spec))))
     taxclass = dict(zip(clas,range(len(clas))))
+    
+    # Get indices of each specimen
     for i in specimen.iterkeys():
         ind = []
         for j, d in enumerate(data):
@@ -30,17 +42,31 @@ def main():
                 ind.append(j)
         specimen[i] = ind
         
+    # Organize specimens by class
     for i in taxclass.iterkeys():
         specind = [d['specimen'] for j,d in enumerate(data) if d['class']==i]
         taxclass[i] = list(set(specind))
-    for k,v in taxclass.iteritems():
+    
+    # Associate image files with each specimen of each class
+    for k,v in taxclass.iteritems():    
         for j,vv in enumerate(v):
             ind = [i for i,d in enumerate(data) if d['specimen'] == vv]
             taxclass[k][j] = {vv:ind}
-#    ind = [i for i,d in enumerate(data) if d['specimen'] == specimenList[0]]
 
-#    fig = plt.figure()
-#    ax = fig.add_subplot(111, autoscale_on=False, xlim=(0, 255), ylim=(0, 255))
+    plotSpecimensByClass(data, taxclass)
+    plotAllSpecimens(data, specimen)
+    
+#        if d['head'] == 'out of frame' and d['tail'] == 'out of frame':
+#            framecount.append(i)
+#        if d['focus'] == 'Slightly out of focus':
+#            focuscount.append(i)
+#    framecount = []
+#    focuscount = []
+#    plotData(data, framecount)
+#    plt.savefig('frame.png')
+#    plotData(data, focuscount)
+#    plt.savefig('focus.png')
+def plotSpecimensByClass(data, taxclass):
     numRows = 6; numCol = 5; cntr = 1
     for k,v in taxclass.iteritems(): # Dict of classes
         fig = plt.figure();
@@ -58,29 +84,7 @@ def main():
         print k + ' arrowmap generated, ' + str(cntr) + '/' + str(len(taxclass)) + ' remaining'
         fig.savefig('arrowmaps/' + d['class'] + '.png')
         cntr +=1
-    plotAllSpecimens(data, specimen)
-#        for i in range(len(taxclass[k])):
-#            d = data[taxclass[k][i]]
-#            if d['head'] == 'out of frame' or d['tail'] == 'out of frame':
-#                continue
-#            head, tail = (d['head']['x'], d['head']['y']), (d['tail']['x'], d['tail']['y'])
-#            ax.annotate('', xy=(128 + head[0] - tail[0], 128 + head[1] - tail[1]),
-#                xytext=(128, 128),
-#                arrowprops=dict(arrowstyle="->", color='r', lw=1))
-#        plt.title(d['specimen']); plt.axis('off')
-#        print k + ' arrowmap generated, ' + str(j) + '/' + str(len(taxclass)) + ' remaining'
-#        fig.savefig('arrowmaps/' + d['class'] + '.png')
-    
-#        if d['head'] == 'out of frame' and d['tail'] == 'out of frame':
-#            framecount.append(i)
-#        if d['focus'] == 'Slightly out of focus':
-#            focuscount.append(i)
-#    framecount = []
-#    focuscount = []
-#    plotData(data, framecount)
-#    plt.savefig('frame.png')
-#    plotData(data, focuscount)
-#    plt.savefig('focus.png')
+        
 def plotAllSpecimens(data, specimen):
     fig = plt.figure()
     numRows = 3; numCols = 2; itr=0
