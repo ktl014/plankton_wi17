@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import cv2
 
 
 def read_csv(csv_file):
@@ -11,9 +12,39 @@ def read_csv(csv_file):
             d['img_file'] = 'images/' + d['url'].split('/')[-1]
             d['specimen'] = d['url'].split('/')[5]
             d['class'] = d['specimen'].split('_')[0]
+            
+            # Conversion
+            # True X, Y
+            img = cv2.imread(d['img_file'])
+            if d['head'] == 'out of frame' or d['tail'] == 'out of frame':
+                continue
+            height, width = img.shape[0], img.shape[1]
+            scale = width / 200.0
+            head = (int(d['head']['x'] * scale), int(d['head']['y'] * scale))
+            tail = (int(d['tail']['x'] * scale), int(d['tail']['y'] * scale))
+            d['true_head'] = head
+            d['true_tail'] = tail
+            
+            # Angle & Radius
+            d['radius'] = np.sqrt((d['true_head'][0] - d['true_tail'][0]) **2 + (d['true_head'][1] - d['true_tail'][1]) ** 2)
+            d['theta'] = np.arctan2(d['true_head'][1] - d['true_tail'][1], d['true_head'][0] - d['true_tail'][0]) * 180 / np.pi
             data.append(d)
     return data
 
+def preprocessing(csv_file):
+    with open('Batch_3084800_batch_results.csv', 'r') as csv_file:
+        data = read_csv(csv_file)
+    for i, d in enumerate(data):
+        img = cv2.imread(d['img_file'])
+        if d['head'] == 'out of frame' or d['tail'] == 'out of frame':
+            continue
+        height, width = img.shape[0], img.shape[1]
+        scale = width / 200.0
+        head = (int(d['head']['x'] * scale), int(d['head']['y'] * scale))
+        tail = (int(d['tail']['x'] * scale), int(d['tail']['y'] * scale))
+        d['true_head'] = head
+        d['true_tail'] = tail
+    return data
 
 def filter_results(results):
     """
