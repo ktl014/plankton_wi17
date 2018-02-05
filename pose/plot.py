@@ -12,16 +12,18 @@ import numpy as np
 import cv2
 import seaborn as sns
 plt.rcParams['font.size'] = 9
-#plt.rcParams['figure.figsize'] = (12,19)
+plt.rcParams['figure.figsize'] = (12,19)
 
 def main():
 #%%
+    # BatchFile results
     batch0 = 'batchResults/Batch_3084800_batch_results.csv'
     batch1 = 'batchResults/Batch_180498_batch_results.csv'
     batch2 = 'batchResults/Batch_180520_batch_results.csv'
     with open(batch0, 'r') as csv_file:
         old_data = read_csv(csv_file)
 
+    # Filter results
     print 'Total annotations: {} by 410 workers'.format(len(old_data))
     image_data = defaultdict(list)
     for d in old_data:
@@ -34,7 +36,7 @@ def main():
             results.append(r)
     data = results
     print 'Total annotations: {}'.format(len(data))
-    
+    taxclass, specimen = setImgBySpecClass(data) # Organize image files by classes & specimens
 #%%    
     old_ddata = plotConfidenceScore(old_data)
     print('Unfiltered data')
@@ -58,36 +60,30 @@ def main():
     for k,v in ddata['z-dir'].iteritems():
         print k + ' total: ' + str(len(v)) + ' ~ {}'.format(len(v)/float(len(ddata['confidence']))*100)
         
-#%%        
-#    plotData(data, old_ddata['frame']); plt.savefig('frame.png')
-##    plotData(data, old_ddata['z-dir']['parallel']); plt.savefig('z-dir/parallel.png')
-##    plotData(data, old_ddata['z-dir']['towardCam']); plt.savefig('z-dir/towardCam.png')
-##    plotData(data, old_ddata['z-dir']['awayCam']); plt.savefig('z-dir/awayCam.png')
-##    plotData(data, old_ddata['z-dir']['notSure']); plt.savefig('z-dir/notSure.png')
+#%%    
+# =============================================================================
+#  Plot Data here
+# =============================================================================
+    
+#    plotData(data, old_ddata['frame']); plt.savefig('plots/frame.png')
+##    plotData(data, old_ddata['z-dir']['parallel']); plt.savefig('plots/z-dir/parallel.png')
+##    plotData(data, old_ddata['z-dir']['towardCam']); plt.savefig('plots/z-dir/towardCam.png')
+##    plotData(data, old_ddata['z-dir']['awayCam']); plt.savefig('plots/z-dir/awayCam.png')
+##    plotData(data, old_ddata['z-dir']['notSure']); plt.savefig('plots/z-dir/notSure.png')
 ##    
 #    
-#    plotData(data, ddata['focus']['infocus']); plt.savefig('infocus_filt.png')
-#    plotData(data, ddata['focus']['slightfocus']); plt.savefig('slightfocus_filt.png')
-#    plotData(data, ddata['focus']['outfocus']); plt.savefig('outfocus_filt.png')
-#    plotData(data, ddata['z-dir']['parallel']); plt.savefig('z-dir/parallel_filt.png')
-#    plotData(data, ddata['z-dir']['towardCam']); plt.savefig('z-dir/towardCam_filt.png')
-#    plotData(data, ddata['z-dir']['awayCam']); plt.savefig('z-dir/awayCam_filt.png')
-#    plotData(data, ddata['z-dir']['notSure']); plt.savefig('z-dir/notSure_filt.png')
+#    plotData(data, ddata['focus']['infocus']); plt.savefig('plots/focus/infocus_filt.png')
+#    plotData(data, ddata['focus']['slightfocus']); plt.savefig('plots/focus/slightfocus_filt.png')
+#    plotData(data, ddata['focus']['outfocus']); plt.savefig('plots/focus/outfocus_filt.png')
+#    plotData(data, ddata['z-dir']['parallel']); plt.savefig('plots/z-dir/parallel_filt.png')
+#    plotData(data, ddata['z-dir']['towardCam']); plt.savefig('plots/z-dir/towardCam_filt.png')
+#    plotData(data, ddata['z-dir']['awayCam']); plt.savefig('plots/z-dir/awayCam_filt.png')
+#    plotData(data, ddata['z-dir']['notSure']); plt.savefig('plots/z-dir/notSure_filt.png')
 
-        
-    taxclass, specimen = setImgBySpecClass(data)
     #plotHisto(data, taxclass)
+    #plotPolarHisto(data, taxclass)
     plotSpecimensByClass(data, taxclass)
     #plotAllSpecimens(data, specimen)
-    
-    
-
-#    framecount = []
-#    focuscount = []
-#    plotData(data, framecount)
-#    plt.savefig('frame.png')
-#    plotData(data, focuscount)
-#    plt.savefig('focus.png')
 #%%    
 def plotConfidenceScore(data):
     framecount = []
@@ -123,6 +119,10 @@ def plotConfidenceScore(data):
     return ddata
 #%%    
 def setImgBySpecClass(data):
+    """ Organize data indices by class & specimen
+        Returns: taxclass --> {class:[{specimen00:indices}, {specimen11:indices},...]}, 
+                specimen --> {ClassXX_specimen00:indices, ClassXX_specimen11:indices}
+    """
     spec = sorted(list(set(d['specimen'] for d in data)))
     clas = sorted(list(set(d['class'] for d in data)))
     specimen = dict(zip(spec,range(len(spec))))
@@ -149,6 +149,9 @@ def setImgBySpecClass(data):
     return taxclass, specimen
 #%%
 def convertTrueXY(turkHT, trueDim, turkDim):
+    """ Original function for converting to true dimensions NOT IN USE
+        Returns: true X & Y coordinates 
+    """
     assert isinstance (turkHT, dict) or isinstance(trueDim, dict) or isinstance(turkDim, dict)
     scale = trueDim['x']/200.0
     trueX = int(turkHT['x'] * scale) #trueDim['x'] * turkDim['x']
@@ -158,6 +161,9 @@ def convertTrueXY(turkHT, trueDim, turkDim):
 # sns.distplot(theta, bins=20, kde=False, rug=True); plt.title('Toranidae_Specimen00 Theta'); plt.xlabel('Theta value'); plt.ylabel('Frequency');
 # sns.distplot(radii, kde=False, rug=True); plt.title('Toranidae_Specimen00 Radius'); plt.xlabel('Radius value (True Pixel Coordinates)'); plt.ylabel('Frequency');    
 def plotHisto(data, taxclass):
+    """ plots Radius & Angle histograms
+        Saves images to plots/angles, plots/radius
+    """
     fig = plt.figure(); 
     numRows = 5; numCols = 3; cntr = 1
     for k,v in taxclass.iteritems(): # Dict of classes vs specimens
@@ -165,6 +171,8 @@ def plotHisto(data, taxclass):
         ax = fig.add_subplot(numRows, numCols, cntr, autoscale_on=True) #, xlim=(-3, 3) , ylim=(0, 255))
         fig1 = plt.figure()
         for i,vv in enumerate(v): # List of specimens
+            
+            # Dynamically adjust rows & columns of subplots based off number of specimens
             totSubplot = len(v)
             totCols = 4
             totRows = totSubplot // totCols
@@ -212,6 +220,9 @@ def plotPolarHisto(data, taxclass):
         cntr += 1
 #%%
 def plotSpecimensByClass(data, taxclass):
+    """ plots arrowmaps for each class with all specimens included & separately plots individual specimen arrowmaps for each class
+        Saves plots to plots/arrowmaps
+    """
     numRows1 = 5; numCols1 = 3; cntr = 1
     fig1 = plt.figure(); 
     for k,v in taxclass.iteritems(): # Dict of classes
@@ -265,7 +276,23 @@ def plotAllSpecimens(data, specimen):
 #%%
 #plot N specimen by class
 # plotData(data, taxclass['Toranidae'][0]['Toranidae_specimen00']) 
+    
+def plotData_tst(data, indTst):
+    """ Plots arrow upon a single image
+        indTst param: int, ex: 0
+    """
+    assert isinstance(indTst, int)
+    d = data[indTst]
+    img = cv2.imread(d['img_file'])
+    b,g,r = cv2.split(img)
+    img = cv2.merge([r,g,b])
+    cv2.arrowedLine(img, d['true_tail'], d['true_head'], (0, 0, 255), 3)
+    plt.imshow(img)
+    plt.title(d['class']); plt.axis('off')
+#%%
 def plotData(data, ind):
+    """ Plots 45 pose labeled images from a specimen
+    """
     plotArrow = True
     numRows = 9; numCols = 5
     plt.rcParams['font.size'] = 9
@@ -291,7 +318,7 @@ def plotData(data, ind):
             cv2.arrowedLine(img, d['true_tail'], d['true_head'], (0, 0, 255), 3)
         plt.imshow(img)
         plt.title(d['class']); plt.axis('off')
-    #plt.savefig('toranidae.png')
+    #plt.savefig('plots/toranidae.png')
     #return imgFile
 #%%
 if __name__ == '__main__':

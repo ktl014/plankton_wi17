@@ -9,16 +9,17 @@ def read_csv(csv_file):
     for row in csv_reader:
         datum = eval(row['Answer.annotation_data'])
         for d in datum:
+            d['trueimg'] =  {'x':int(d['url'].split('-')[-3:][1]), 'y':int(d['url'].split('-')[-3:][0])}
             d['img_file'] = 'images/' + d['url'].split('/')[-1]
             d['specimen'] = d['url'].split('/')[5]
             d['class'] = d['specimen'].split('_')[0]
             
             # Conversion
             # True X, Y
-            img = cv2.imread(d['img_file'])
+            #img = cv2.imread(d['img_file'])
             if d['head'] == 'out of frame' or d['tail'] == 'out of frame':
                 continue
-            height, width = img.shape[0], img.shape[1]
+            height, width = int(d['url'].split('-')[-3:][0]), int(d['url'].split('-')[-3:][1])
             scale = width / 200.0
             head = (int(d['head']['x'] * scale), int(d['head']['y'] * scale))
             tail = (int(d['tail']['x'] * scale), int(d['tail']['y'] * scale))
