@@ -1,0 +1,162 @@
+specimen_id	order	family	genus
+20170120_001	Decapoda	Sergestidae	Sergestidae (family)
+20170120_002	Amphipoda	Gammaridae	Gammaridae (family)
+20170124_001	Amphipoda	Gammaridae	Gammaridae (family)
+20170124_002	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170126_001	Appendicularia (class)	Appendicularia (class)	Appendicularia (class)
+20170126_002	Mysida	Mysida (order)	Mysida (order)
+20170126_003	Calanoida	Calanoida (order)	Calanoida (order)
+20170130_001	Calanoida	Calanidae	Calanus
+20170130_002	Mysida	Mysida (order)	Mysida (order)
+20170130_003	Decapoda	Brachyura	Brachyura (family)
+20170131_001	Saggittoidea (class)	Saggittoidea (class)	Saggittoidea (class)
+20170131_002	Mysida	Mysida (order)	Mysida (order)
+20170203_001	Calanoida	Calanoida (order)	Calanoida (order)
+20170203_002	Ostracoda (class)	Ostracoda (class)	Ostracoda (class)
+20170206_001	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170206_002	Euphausiacea	Euphausiidae	Euphausiidae (family)
+20170207_001	Calanoida	Calanoida (order)	Calanoida (order)
+20170207_002	Calanoida	Calanoida (order)	Calanoida (order)
+20170207_003	Cydippida	Cydippida (order)	Cydippida (order)
+20170207_004	Siphonophorae	Diphyidae	Diphyidae (family)
+20170207_005	Chordata (phylum)	Chordata (phylum)	Chordata (phylum)
+20170207_006	Euphausiacea	Euphausiidae	Euphausiidae (family)
+20170209_001	Calanoida	Calanoida (order)	Calanoida (order)
+20170209_002	Calanoida	Pontellidae	Pontellidae (family)
+20170209_003	Ostracoda (class)	Ostracoda (class)	Ostracoda (class)
+20170209_004	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170210_001	Cydippida	Cydippida (order)	Cydippida (order)
+20170210_002	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170213_001	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170213_002	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170213_003	Calanoida	Calanoida (order)	Calanoida (order)
+20170214_001	Decapoda	Brachyura	Brachyura (family)
+20170214_002	Calanoida	Calanoida (order)	Calanoida (order)
+20170214_003	Calanoida	Calanoida (order)	Calanoida (order)
+20170214_004	Amphipoda	Gammaridae	Gammaridae (family)
+20170214_005	Calanoida	Calanoida (order)	Calanoida (order)
+20170214_006	Unknown	Unknown	Unknown
+20170216_001	Cyclopoida	Oithonidae	Oithonidae (family)
+20170216_002	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170216_003	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170216_004	Cyclopoida	Oithonidae	Oithonidae (family)
+20170216_005	Calanoida	Calanoida (order)	Calanoida (order)
+20170216_006	Unknown	Unknown	Unknown
+20170217_001	Calanoida	Acartiidae	Acartiidae (family)
+20170217_002	Calanoida	Acartiidae	Acartiidae (family)
+20170217_003	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170217_004	Calanoida	Calanoida (order)	Calanoida (order)
+20170217_005	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170217_006	Cyclopoida	Oithonidae	Oithonidae (family)
+20170217_007	Unknown	Unknown	Unknown
+20170221_001	Decapoda	Brachyura	Brachyura (family)
+20170221_002	Euphausiacea	Euphausiidae	Euphausiidae (family)
+20170221_003	Decapoda	Brachyura	Brachyura (family)
+20170221_004	Decapoda	Brachyura	Brachyura (family)
+20170221_005	Decapoda	Brachyura	Brachyura (family)
+20170221_006	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170221_007	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170223_001	Calanoida	Calanoida (order)	Calanoida (order)
+20170223_002	Calanoida	Tortanidae	Tortanus
+20170224_001	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170224_002	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170224_003	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170224_004	Cyclopoida	Oithonidae	Oithonidae (family)
+20170224_005	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170224_006	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170224_007	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170224_008	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170224_009	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170224_010	Calanoida	Calanoida (order)	Calanoida (order)
+20170224_011	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170224_012	Copepoda Nauplia (subclass)	Copepoda Nauplia (subclass)	Copepoda Nauplia (subclass)
+20170228_001	Unknown	Unknown	Unknown
+20170228_002	Unknown	Unknown	Unknown
+20170228_003	Unknown	Unknown	Unknown
+20170302_001	Calanoida	Acartiidae	Acartiidae (family)
+20170302_002	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170303_001	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170303_002	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170303_003	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+20170303_004	Calanoida	Calanoida (order)	Calanoida (order)
+20170303_005	Calanoida	Calanoida (order)	Calanoida (order)
+20170306_001	Amphipoda	Gammaridae	Gammaridae (family)
+20170306_002	Amphipoda	Gammaridae	Gammaridae (family)
+20170306_003	Unknown	Unknown	Unknown
+20170306_004	Calanoida	Calanoida (order)	Calanoida (order)
+20170306_005	Calanoida	Calanoida (order)	Calanoida (order)
+20170306_006	Calanoida	Calanoida (order)	Calanoida (order)
+20170306_007	Amphipoda	Gammaridae	Gammaridae (family)
+20170307_001	Amphipoda	Gammaridae	Gammaridae (family)
+20170307_002	Calanoida	Calanoida (order)	Calanoida (order)
+20170307_003	Amphipoda	Gammaridae	Gammaridae (family)
+20170420_001	Appendicularia (class)	Appendicularia (class)	Appendicularia (class)
+20170425_001	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170425_002	Calanoida	Acartiidae	Acartiidae (family)
+20170425_003	Calanoida	Calanoida (order)	Calanoida (order)
+20170425_004	Calanoida	Calanoida (order)	Calanoida (order)
+20170425_005	Calanoida	Calanoida (order)	Calanoida (order)
+20170427_001	Unknown	Unknown	Unknown
+20170427_002	Calanoida	Calanoida (order)	Calanoida (order)
+20170427_003	Amphipoda	Gammaridae	Gammaridae (family)
+20170427_004	Calanoida	Calanoida (order)	Calanoida (order)
+20170502_001	Unknown	Unknown	Unknown
+20170502_002	Amphipoda	Gammaridae	Gammaridae (family)
+20170504_001	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170504_002	Calanoida	Calanoida (order)	Calanoida (order)
+20170504_003	Calanoida	Calanoida (order)	Calanoida (order)
+20170504_004	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170504_005	Unknown	Unknown	Unknown
+20170504_006	Euphausiacea	Euphausiidae	Euphausiidae (family)
+20170504_007	Calanoida	Calanoida (order)	Calanoida (order)
+20170509_001	Calanoida	Calanoida (order)	Calanoida (order)
+20170509_002	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170509_003	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+20170509_004	Cyclopoida	Oithonidae	Oithonidae (family)
+20170509_005	Unknown	Unknown	Unknown
+20170516_001	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170516_002	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170516_003	Calanoida	Calanoida (order)	Calanoida (order)
+20170516_004	Calanoida	Calanidae	Calanus
+20170516_005	Unknown	Unknown	Unknown
+20170516_006	Amphipoda	Gammaridae	Gammaridae (family)
+20170516_007	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+20170516_008	Calanoida	Acartiidae	Acartiidae (family)
+20170518_001	Amphipoda	Gammaridae	Gammaridae (family)
+20170601_001	Unknown	Unknown	Unknown
+20170601_002	Unknown	Unknown	Unknown
+20170601_003	Calanoida	Calanoida (order)	Calanoida (order)
+20171128_001	Unknown	Unknown	Unknown
+20171130_001	Unknown	Unknown	Unknown
+20171130_003	Unknown	Unknown	Unknown
+20171130_004	Unknown	Unknown	Unknown
+20171130_005	Unknown	Unknown	Unknown
+20171205_001	Unknown	Unknown	Unknown
+20171207_001	Unknown	Unknown	Unknown
+20171207_002	Unknown	Unknown	Unknown
+20171207_003	Unknown	Unknown	Unknown
+20171207_004	Unknown	Unknown	Unknown
+20171207_005	Unknown	Unknown	Unknown
+20171207_006	Unknown	Unknown	Unknown
+google_01	Copepoda Nauplia (subclass)	Copepoda Nauplia (subclass)	Copepoda Nauplia (subclass)
+google_02	Cyclopoida	Poecilostomatoida	Poecilostomatoida (family)
+google_03	Siphonophorae	Diphyidae	Diphyidae (family)
+google_04	Polychaeta (class)	Polychaeta (class)	Polychaeta (class)
+google_05	Calanoida	Calanidae	Calanus
+google_06	Euphausiacea	Euphausiidae	Euphausiidae (family)
+google_07	Hydromedusae	Hydromedusae (order)	Hydromedusae (order)
+google_08	Mysida	Mysida (order)	Mysida (order)
+google_09	Amphipoda	Gammaridae	Gammaridae (family)
+google_10	Decapoda	Brachyura	Brachyura (family)
+google_11	Cydippida	Cydippida (order)	Cydippida (order)
+google_12	Cyclopoid	Oithonidae	Oithonidae (family)
+google_13	Chordata (phylum)	Chordata (phylum)	Chordata (phylum)
+google_14	Cyclopoida	Oithonidae	Oithonidae (family)
+google_15	Calanoida	Tortanidae	Tortanus
+google_16	Ostracoda (class)	Ostracoda (class)	Ostracoda (class)
+google_17	Calanoida	Acartiidae	Acartiidae (family)
+google_18	Saggittoidea (class)	Saggittoidea (class)	Saggittoidea (class)
+google_19	Calanoida	Calanoida (order)	Calanoida (order)
+google_20	Calanoida	Pontellidae	Pontellidae (family)
+google_21	Decapoda	Sergestidae	Sergestidae (family)
+google_22	Appendicularia (class)	Appendicularia (class)	Appendicularia (class)
