@@ -1,0 +1,6 @@
+IMG_NAME = 'img_name'
+CLASS = 'class'
+COORDINATES = 'coordinates'
+ALEXNET = 'alexnet'
+VGG16 = 'vgg16'
+RESNET18 = 'resnet18'
