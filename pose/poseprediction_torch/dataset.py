@@ -10,7 +10,9 @@ class PlanktonDataset(Dataset):
     def __init__(self, csv_file, img_dir, transform=None, output_size=32):
         assert isinstance(output_size, (int, tuple))
 
+        # TODO: train/val split
         self.data = data_filter(read_csv(csv_file))
+
         self.img_dir = img_dir
         self.transform = transform
 
@@ -24,17 +26,27 @@ class PlanktonDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
+        # TODO: change this to actual image file position
         img_name = os.path.join(self.img_dir,
                                 self.data.loc[idx, IMG_NAME])
+
         image = io.imread(img_name)
         coordinates = self.data.loc[idx, COORDINATES]
         cls = self.data.loc[idx, CLASS]
+
         sample = {'image': image,
                   'coordinates': np.asarray(coordinates),
                   'cls': cls}
 
         if self.transform:
             sample = self.transform(sample)
+
+        # TODO: map the coordinates to Gaussian belief map
+        # ** alternatively can be done at training time **
+        # head_map = coordinates_to_gaussian_map(coordinates[:2], image, self.output_size)
+        # tail_map = coordinates_to_gaussian_map(coordinates[2:], image, self.output_size)
+        # bg_map = ?
+        # sample['target_map'] = np.asarray([head_map, tail_map])
 
         return sample
 

@@ -7,7 +7,7 @@ from constants import *
 
 
 def url_to_filename(img_url):
-    return img_url.split('/')[-1]
+    return img_url.split('/')[-2:]
 
 
 def url_to_class(img_url):

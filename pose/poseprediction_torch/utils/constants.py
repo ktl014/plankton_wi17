@@ -1,4 +1,4 @@
-IMG_NAME = 'img_name'
+IMG_NAME = 'images'
 CLASS = 'class'
 COORDINATES = 'coordinates'
 ALEXNET = 'alexnet'

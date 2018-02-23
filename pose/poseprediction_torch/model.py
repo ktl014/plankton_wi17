@@ -38,9 +38,9 @@ class PoseModel(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(128, 128, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(128, 512, kernel_size=3, padding=1),
+            nn.Conv2d(128, 512, kernel_size=1, padding=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(512, 2, kernel_size=3, padding=1)
+            nn.Conv2d(512, 3, kernel_size=1, padding=1)
         )
 
     def forward(self, x):
