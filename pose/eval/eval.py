@@ -67,7 +67,8 @@ if __name__ == '__main__':
     modelToEval = 'vgg19'
     model = PoseModelEvaluator(gpuDevice, modelToEval)
     data = np.load('/data5/morgado/projects/plankton/turk/results/pose.npy').all()
-    taxLvlDatasets = group_specimen2class(data['images'])
+    headX, headY, tailX, tailY = data['head_x'], data['head_y'], data['tail_x'], data['tail_y']
+    taxLvlDatasets, specimenIDs = group_specimen2class(data['images'])
 
     model.loadPretrainedModel()
     '''
@@ -82,9 +83,17 @@ if __name__ == '__main__':
     '''
 
     # Evaluate keypoints given the predicted coordinate
-    # Set up function to set up the dataset
+    # taxLvl Datasets Order --> Specimen, Genus, Family, Order, Dataset
     for specimenSet in taxLvlDatasets:
          for cls in specimenSet:
+             idx = [i for i, spc in enumerate(specimenIDs) if spc in specimenSet[cls]]
+             accuracyEval = Accuracy(headX[idx], headY[idx], tailX[idx], tailY[idx])
+             classAvgEuclid[cls] = accuracyEval.euclideanDistance(poseCoords[idx])
+             classAvgEuclid_idx[cls] = idx
+
+
+
+
 
 
 

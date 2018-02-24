@@ -5,13 +5,25 @@ from scipy.spatial.distance import euclidean
 
 class Accuracy(object):
 
-    def __init__(self):
-        self.gtruth = np.array(([93, 16], [4,32]))
+    def __init__(self, headX, headY, tailX, tailY):
+        assert headX.shape == headY.shape and tailX.shape == tailY.shape
 
-    def computeEuclideanDist(self, prediction):
+        self.gtruthHead = np.column_stack((headX, headY))
+        self.gtruthTail = np.column_stack((tailX, tailY))
+
+        print self.gtruthHead.shape, self.gtruthTail.shape
+
+    #TODO
+    def euclideanDistance(self, prediction):
         numParts = 2   # Part -> Head or Tail
         assert isinstance(prediction, (np.ndarray, np.generic))
         assert prediction.ndim == numParts
+
+        computeEuclideanDist_tst()
+
+        return np.array(headEuclid, tailEuclid, avgEuclid)
+
+    def computeEuclideanDist(self, prediction):
 
         distH = euclidean(prediction[0], self.gtruth[0])
         distT = euclidean(prediction[1], self.gtruth[1])
@@ -21,29 +33,12 @@ class Accuracy(object):
     def checkAccuracy(self):
         '''
         Compute Accuracy after all euclidean distance calculated
-        :return:
+        :return:q
         '''
         return 0
 
     def averageScore(self):
         return 0
-
-    def retrieveGtruth_Temp(self):
-        txtFile = '/data5/lekevin/plankton/poseprediction/code/20170124_001-timeseries.lst'
-        imgFileNames = open(txtFile).read().splitlines()
-        metaData = json.load('/data5/Plankton_wi18/rawcolor_db/meta/20170124_001-meta.json')
-        imgFileNames = [fn for fn in metaData if 'annotation' in metaData]
-        for fn in imgFileNames:
-            pose = metaData[fn]['annotation']
-            headOOF = [isinstance(p['head'], dict) for p in pose]
-            tailOOF = [isinstance(p['tail'], dict) for p in pose]
-            if not all(tailOOF) or not all(headOOF):
-                continue
-            head_x = int(np.median ([p['head']['x'] for p in pose]))
-            head_y = int(np.median ([p['head']['y'] for p in pose]))
-            tail_x = int(np.median ([p['tail']['x'] for p in pose]))
-            tail_y = int(np.median ([p['tail']['y'] for p in pose]))
-
 
 if __name__=='__main__':
     def computeEuclideanDist_tst():

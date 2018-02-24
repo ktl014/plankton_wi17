@@ -86,7 +86,7 @@ def group_specimen2class(imgList):
     order = [planktonLabels[spc][0] for spc in specimenIDs]
     orderSet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][0]==cls] for cls in set(order)}   # Order Lvl
     dataSet = {'Dataset': specimenIDs}
-    return [specimenSet, genusSet, familySet, orderSet, dataSet]
+    return [specimenSet, genusSet, familySet, orderSet, dataSet], specimenIDs
 
 
 def plankton_labels():
