@@ -1,4 +1,4 @@
-model_checkpoints/
+model_checkpoints*/
 log/
 tmp/
 .ipynb_checkpoints/

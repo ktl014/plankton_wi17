@@ -76,7 +76,7 @@ def data_filter(data):
     return data.reset_index()
 
 
-def coordinates_to_gaussian_map(coordinates, output_size, amplitude=1., sigma=3.):
+def coordinates_to_gaussian_map(coordinates, output_size, amplitude, sigma):
     width, height = np.arange(output_size[0]), np.arange(output_size[1])
     x, y = np.meshgrid(width, height)
     gaussian2d = Gaussian2D(amplitude, int(np.round(coordinates[0] * output_size[0])), int(round(coordinates[1] * output_size[1])), sigma, sigma)
@@ -84,7 +84,7 @@ def coordinates_to_gaussian_map(coordinates, output_size, amplitude=1., sigma=3.
     return gaussian2d(x, y)
 
 
-def get_belief_map(coordinates, output_size, amplitude=1., sigma=3.):
+def get_belief_map(coordinates, output_size, amplitude=1., sigma=5.):
     head_map = coordinates_to_gaussian_map(coordinates[:2], output_size, amplitude, sigma)
     tail_map = coordinates_to_gaussian_map(coordinates[2:], output_size, amplitude, sigma)
     bg_map = np.maximum(1 - head_map - tail_map, 0)
