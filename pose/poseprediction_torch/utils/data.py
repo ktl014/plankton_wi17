@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
+from astropy.modeling.models import Gaussian2D
 import csv
 import cv2
 import os
+from PIL import Image
 from constants import *
 
 
@@ -74,5 +76,40 @@ def data_filter(data):
     return data.reset_index()
 
 
-# def coordinates_to_gaussian_map(size):
-#
+def coordinates_to_gaussian_map(coordinates, output_size, amplitude=1., sigma=3.):
+    width, height = np.arange(output_size[0]), np.arange(output_size[1])
+    x, y = np.meshgrid(width, height)
+    gaussian2d = Gaussian2D(amplitude, int(np.round(coordinates[0] * output_size[0])), int(round(coordinates[1] * output_size[1])), sigma, sigma)
+
+    return gaussian2d(x, y)
+
+
+def get_belief_map(coordinates, output_size, amplitude=1., sigma=3.):
+    head_map = coordinates_to_gaussian_map(coordinates[:2], output_size, amplitude, sigma)
+    tail_map = coordinates_to_gaussian_map(coordinates[2:], output_size, amplitude, sigma)
+    bg_map = np.maximum(1 - head_map - tail_map, 0)
+
+    return np.asarray([head_map, tail_map, bg_map], dtype=np.float32)
+
+
+def pil_loader(path):
+    with open(path, 'rb') as f:
+        with Image.open(f) as img:
+            return img.convert('RGB')
+
+
+def eval_euc_dists(pred_maps, targets):
+    pred = [np.argwhere(mp == np.max(mp))[0, ::-1]
+            for pred_map in pred_maps
+            for mp in pred_map[:2]]
+    pred = np.array(pred).reshape(targets.shape)
+
+    w, h = pred_maps.shape[-2:]
+    targets = targets * [w, h, w, h]
+
+    dists = np.square(pred - targets)
+    head_dist = np.mean(np.sum(dists[:, :2], axis=1))
+    tail_dist = np.mean(np.sum(dists[:, 2:], axis=1))
+    avg_dist = 0.5 * (head_dist + tail_dist)
+
+    return {'head': head_dist, 'tail': tail_dist, 'average': avg_dist}

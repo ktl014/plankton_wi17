@@ -9,7 +9,7 @@ class Rescale(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        image, coordinates, cls = sample['image'], sample['coordinates'], sample['cls']
+        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
 
         h, w = image.shape[:2]
         if isinstance(self.output_size, int):
@@ -24,43 +24,46 @@ class Rescale(object):
 
         image = cv2.resize(image, (new_w, new_h))
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls}
+        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
 
 
 class ToTensor(object):
     def __call__(self, sample):
-        image, coordinates, cls = sample['image'], sample['coordinates'], sample['cls']
+        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
 
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
                 'coordinates': torch.from_numpy(coordinates),
-                'cls': cls}
+                'cls': cls,
+                'target_map': torch.from_numpy(target_map)}
 
 
 class RandomHorizontalFlip(object):
     def __call__(self, sample, flip_prob=0.5):
-        image, coordinates, cls = sample['image'], sample['coordinates'], sample['cls']
+        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
 
         if np.random.rand() < flip_prob:
             image = image[:, ::-1, :].copy()
             coordinates = np.asarray([
                 1 - coordinates[0], coordinates[1],
                 1 - coordinates[2], coordinates[3]])
+            target_map = target_map[:, :, ::-1].copy()
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls}
+        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
 
 
 class RandomVerticalFlip(object):
     def __call__(self, sample, flip_prob=0.5):
-        image, coordinates, cls = sample['image'], sample['coordinates'], sample['cls']
+        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
 
         if np.random.rand() < flip_prob:
             image = image[::-1, :, :].copy()
             coordinates = np.asarray([
                 coordinates[0], 1 - coordinates[1],
                 coordinates[2], 1 - coordinates[3]])
+            target_map = target_map[:, ::-1, :].copy()
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls}
+        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
 
 
 class Normalize(object):
@@ -69,12 +72,19 @@ class Normalize(object):
         self.std = std
 
     def __call__(self, sample):
-        image, coordinates, cls = sample['image'], sample['coordinates'], sample['cls']
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
 
-        image = image / self.std
-        image -= self.mean
+        Returns:
+            Tensor: Normalized image.
+        """
+        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls}
+        for t, m, s in zip(image, self.mean, self.std):
+            t.sub_(m).div_(s)
+
+        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
 
 
 class EmptyTransform(object):

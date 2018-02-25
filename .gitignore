@@ -1,4 +1,6 @@
-.ipynb_checkpoints
+log/
+tmp/
+.ipynb_checkpoints/
 .DS_Store
 data/
 .idea/

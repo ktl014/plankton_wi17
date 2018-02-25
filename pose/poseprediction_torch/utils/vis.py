@@ -9,7 +9,7 @@ def show_arrow(image, coordinates, cls):
     height, width = image.shape[:2]
     head = (int(coordinates[0] * width), int(coordinates[1] * height))
     tail = (int(coordinates[2] * width), int(coordinates[3] * height))
-    cv2.arrowedLine(image, tail, head, (255, 0, 0), 3)
+    cv2.arrowedLine(image, tail, head, (1., 0., 0.), 3)
     plt.imshow(image)
     plt.axis('off')
     plt.title(cls)
@@ -30,7 +30,15 @@ def show_arrow_batch(sample_batched):
         hx, hy, tx, ty = coordinates_batch[i].numpy()
         head, tail = (int(tx * im_w + i * im_w), int(ty * im_h)), \
                      (int(hx * im_w + i * im_w), int(hy * im_h))
-        cv2.arrowedLine(grid, tail, head, (255, 0, 0), 3)
+        cv2.arrowedLine(grid, tail, head, (1., 0., 0.), 3)
 
     plt.imshow(grid)
-    plt.title('  '.join(cls_batch))
+    # plt.title('  '.join(cls_batch))
+
+
+def show_image_batch(images_batch):
+    grid = utils.make_grid(images_batch)
+    grid = grid.numpy().transpose((1, 2, 0))
+    grid = grid.copy()
+
+    plt.imshow(grid)
