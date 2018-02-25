@@ -1,4 +1,4 @@
-checkpoint.pth.tar
+model_checkpoints/
 log/
 tmp/
 .ipynb_checkpoints/

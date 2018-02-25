@@ -86,6 +86,15 @@ class Normalize(object):
 
         return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
 
+    def recover(self, sample):
+        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
+        image, coordinates, cls, target_map = image.clone(), coordinates.clone(), cls, target_map.clone()
+
+        for t, m, s in zip(image, self.mean, self.std):
+            t.add_(m).mul_(s)
+
+        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
+
 
 class EmptyTransform(object):
     def __call__(self, sample):

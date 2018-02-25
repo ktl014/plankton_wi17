@@ -1,5 +1,5 @@
 from torch.utils.data import Dataset
-from utils.data import get_belief_map, pil_loader
+from utils.data import get_belief_map
 from utils.constants import *
 import os
 import numpy as np
@@ -8,10 +8,9 @@ from skimage import io
 
 
 class PlanktonDataset(Dataset):
-    def __init__(self, csv_file, img_dir, transform=None, output_size=32):
+    def __init__(self, csv_file, img_dir, transform=None, output_size=48):
         assert isinstance(output_size, (int, tuple))
 
-        # TODO: train/val split
         self.data = pd.read_csv(csv_file)
 
         self.img_dir = img_dir
@@ -27,7 +26,6 @@ class PlanktonDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        # TODO: change this to actual image file position
         img_name = os.path.join(self.img_dir,
                                 self.data.loc[idx, IMG_NAME])
 
@@ -52,7 +50,9 @@ if __name__ == '__main__':
     from utils.vis import show_arrow_batch
     from torch.utils.data import DataLoader
     from torchvision import transforms
+    import matplotlib
     import matplotlib.pyplot as plt
+    matplotlib.use('Qt5Agg')
 
     img_dir = '/data5/Plankton_wi18/rawcolor_db/images'
     csv_filename = 'data/data_train.csv'

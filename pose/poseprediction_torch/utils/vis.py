@@ -2,10 +2,18 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from torchvision import utils
+import torch
 
 
 def show_arrow(image, coordinates, cls):
-    image = np.copy(image)
+    if isinstance(image, (np.ndarray, list)):
+        image = np.copy(image)
+    elif isinstance(image, torch.FloatTensor):
+        image = (image.numpy()).transpose((1, 2, 0)).copy()
+
+    if isinstance(coordinates, torch.FloatTensor):
+        coordinates = coordinates.numpy()
+
     height, width = image.shape[:2]
     head = (int(coordinates[0] * width), int(coordinates[1] * height))
     tail = (int(coordinates[2] * width), int(coordinates[3] * height))
