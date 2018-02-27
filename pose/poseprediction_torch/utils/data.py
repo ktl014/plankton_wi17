@@ -84,7 +84,7 @@ def coordinates_to_gaussian_map(coordinates, output_size, amplitude, sigma):
     return gaussian2d(x, y)
 
 
-def get_belief_map(coordinates, output_size, amplitude=1., sigma=5.):
+def get_belief_map(coordinates, output_size, amplitude, sigma):
     head_map = coordinates_to_gaussian_map(coordinates[:2], output_size, amplitude, sigma)
     tail_map = coordinates_to_gaussian_map(coordinates[2:], output_size, amplitude, sigma)
     bg_map = np.maximum(1 - head_map - tail_map, 0)
