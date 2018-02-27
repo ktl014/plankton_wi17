@@ -116,6 +116,13 @@ def pose_diff2(pose_db1, specimen_ids_db1, pose_db2, specimen_ids_db2):
     prob1 = pose_histogram2(pose_db1, specimen_ids_db1)
     prob2 = pose_histogram2(pose_db2, specimen_ids_db2)
 
+    # Add regularization prior
+    eps = 0.01
+    prob1 += eps
+    prob1 /= prob1.sum()
+    prob2 += eps
+    prob2 /= prob2.sum()
+
     # Compute KL divergence
     kl_div = sps.entropy(prob1.reshape(-1), prob2.reshape(-1), base=10.)
     return kl_div
