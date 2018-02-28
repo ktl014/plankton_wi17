@@ -50,8 +50,8 @@ class PlanktonDataset(Dataset):
 
 
 class DatasetWrapper(object):
-    def __init__(self, phase, csv_filename, img_dir, input_size=(384, 384),
-                 batch_size=16, amp=1., std=3.):
+    def __init__(self, phase, csv_filename, img_dir, input_size, output_size,
+                 batch_size, amp, std):
 
         normalizer = Normalize([0.5, 0.5, 0.5], [1, 1, 1])  # ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
@@ -73,7 +73,8 @@ class DatasetWrapper(object):
                                        img_dir=img_dir,
                                        transform=data_transform[phase],
                                        amp=amp,
-                                       std=std)
+                                       std=std,
+                                       output_size=output_size)
         self.dataloader = DataLoader(self.dataset, batch_size=batch_size, shuffle=True, num_workers=4)
         self.dataset_size = len(self.dataset)
 

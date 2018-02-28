@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 import os
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 
 import torch.nn as nn
 import torch.optim as optim
@@ -21,7 +21,7 @@ from model import PoseModel
 from transform import *
 from logger import Logger
 from utils.constants import *
-from utils.data import eval_euc_dists
+from utils.data import eval_euc_dists, get_output_size
 
 
 parser = argparse.ArgumentParser(description='PyTorch CPM Training')
@@ -29,12 +29,14 @@ parser.add_argument('--data', default='/data3/ludi/plankton_wi17/pose/posepredic
                     type=str, metavar='DIR', help='path to dataset')
 parser.add_argument('--root', default='/data3/ludi/plankton_wi17/pose/poseprediction_torch/records',
                     type=str, metavar='PATH', help='root directory of the records')
-parser.add_argument('--img-dir', default='/data5/Plankton_wi18/rawcolor_db/images',
+parser.add_argument('--img-dir', default='/data5/Plankton_wi18/rawcolor_db2/images',
                     type=str, metavar='PATH', help='path to images')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--model', '-m', metavar='MODEL', default=VGG16, choices=MODELS,
                     help='pretrained model: ' + ' | '.join(MODELS) + ' (default: {})'.format(VGG16))
+# parser.add_argument('-g', '--gpu', default=1, type=int, metavar='N',
+#                     help='GPU to use')
 parser.add_argument('--epochs', default=25, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
@@ -61,22 +63,23 @@ def main():
     global args
     args = parser.parse_args()
 
-    datasets = {phase: DatasetWrapper(phase,
-                                      csv_filename=os.path.join(args.data, 'data_{}.csv'.format(phase)),
-                                      img_dir=args.img_dir,
-                                      input_size=(args.input_size, args.input_size),
-                                      batch_size=args.batch_size,
-                                      amp=args.amp,
-                                      std=args.std)
-                for phase in PHASES}
-
     print('=> loading model...')
     model = PoseModel(model_name=args.model)
-    print('=> done!')
     criterion = nn.MSELoss()
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=0.1)
+    print('=> done!')
+
+    datasets = {phase: DatasetWrapper(phase,
+                                      csv_filename=os.path.join(args.data, 'data_{}.csv'.format(phase)),
+                                      img_dir=args.img_dir,
+                                      input_size=(args.input_size, args.input_size),
+                                      output_size=get_output_size(model, args.input_size),
+                                      batch_size=args.batch_size,
+                                      amp=args.amp,
+                                      std=args.std)
+                for phase in PHASES}
 
     trainer = Trainer(datasets, model, criterion, optimizer, exp_lr_scheduler)
     trainer.train()
@@ -95,9 +98,9 @@ class Trainer(object):
         self.checkpoints_dir = os.path.join(self.root, 'checkpoints')
 
         self.gpu_mode = GpuMode.CPU if not torch.cuda.is_available() \
-            else GpuMode.MULTI if os.environ["CUDA_VISIBLE_DEVICES"].count(',') > 0 \
+            else GpuMode.MULTI if os.environ.get("CUDA_VISIBLE_DEVICES", '').count(',') > 0 \
             else GpuMode.SINGLE
-        print('=> {} GPU mode, using GPU: {}'.format(self.gpu_mode, os.environ["CUDA_VISIBLE_DEVICES"]))
+        print('=> {} GPU mode, using GPU: {}'.format(self.gpu_mode, os.environ.get("CUDA_VISIBLE_DEVICES", '')))
 
         self.to_cuda()
 
@@ -111,11 +114,13 @@ class Trainer(object):
 
         self.start_epoch = args.start_epoch
         self.end_epoch = self.start_epoch + args.epochs
-        print('=> start from {} epoch, end at {} epoch'.format(self.start_epoch, self.end_epoch))
+        print('=> start from epoch {}, end at epoch {}'.format(self.start_epoch, self.end_epoch))
 
+        print('=> initializing logger...')
         self.loss_logger = Logger('loss', self.log_dir, args.resume)
         self.err_logger = Logger('err', self.log_dir, args.resume)
-        Logger.write_meta(self.log_dir, args)
+        Logger.write_meta(self.root, args)
+        print('=> done!')
 
     def save_checkpoint(self, state, is_best, filename='checkpoint.pth.tar'):
         if not os.path.isdir(self.checkpoints_dir):
@@ -137,13 +142,13 @@ class Trainer(object):
             self.optimizer.load_state_dict(checkpoint['optimizer'])
             print("=> loaded checkpoint '{}' (epoch {})"
                   .format(args.resume, checkpoint['epoch']))
-            print("=> no checkpoint found at '{}'".format(filename))
         else:
-            pass
+            print("=> no checkpoint found at '{}'".format(filename))
 
     @staticmethod
     def get_root_dir():
         if args.resume:
+            print('=> resume from {}'.format(args.resume))
             return args.resume
         else:
             while True:
@@ -151,6 +156,7 @@ class Trainer(object):
                 root = os.path.join(args.root, now.strftime('%Y-%m-%d_%H:%M:%S'))
                 if not os.path.isdir(root):
                     os.makedirs(root)
+                    print('=> record directory created at {}'.format(root))
                     return root
 
     def to_cuda(self):
@@ -199,7 +205,7 @@ class Trainer(object):
                     running_loss += loss.data[0] * inputs.size(0)
                     running_err += err['average'] * inputs.size(0)
 
-                    if phase == 'train':
+                    if phase == TRAIN:
                         loss.backward()
                         self.optimizer.step()
 
@@ -210,14 +216,14 @@ class Trainer(object):
                     eta = (time.time() - epoch_since) / total * (len(self.datasets[phase]) - total)
 
                     print('{} {}/{} ({:.0f}%), Loss: {:.4f}, Error: {:.4f}, ETA: {:.0f}s     \r'
-                          .format('Training' if phase == 'train' else 'validating',
+                          .format('Training' if phase == TRAIN else 'validating',
                                   total, len(self.datasets[phase]), 100.0 * total / len(self.datasets[phase]),
                                   running_loss / total, running_err / total, eta), end='')
 
                 epoch_loss = running_loss / len(self.datasets[phase])
                 epoch_err = running_err / len(self.datasets[phase])
 
-                if phase == 'valid':
+                if phase == VALID:
                     self.loss_logger.add_record(phase, epoch_loss)
                     self.err_logger.add_record(phase, epoch_err)
                     is_best = epoch_err < self.best_err

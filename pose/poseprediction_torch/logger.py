@@ -1,35 +1,40 @@
 import os
-from visualdl import LogWriter, LogReader
+from visualdl import LogWriter
 from utils.constants import *
 
 
 class Logger(object):
     logger = None
 
-    def __init__(self, name, log_dir, resume, phases=(TRAIN, VALID)):
+    def __init__(self, name, log_dir, resume, phases=(TRAIN, VALID), step=10):
         if not os.path.isdir(log_dir):
             os.makedirs(log_dir)
 
         if Logger.logger is None:
             Logger.logger = LogWriter(log_dir, sync_cycle=10)
+
         self.scalars = {}
         self.count = {phase: 0 for phase in phases}
+        self.fhandle = {phase: open(os.path.join(log_dir, '{}_{}.txt'.format(phase, name)), 'a') for phase in phases}
+        self.step = step
 
         for phase in phases:
-            if resume:
-                reader = LogReader(log_dir)
-                records = reader.scalar('scalars/{}_{}'.format(phase, name)).records()
-                self.n = len(records)
-
             with self.logger.mode(phase):
                 self.scalars[phase] = self.logger.scalar('scalars/{}_{}'.format(phase, name))
 
             if resume:
-                for i, record in enumerate(records):
-                    self.scalars[phase].add_record(i, record)
+                f = open(os.path.join(log_dir, '{}_{}.txt'.format(phase, name)), 'r')
+                for i, record in enumerate(f):
+                    if (i % 10 == 0 or phase != TRAIN) and len(record) > 1:
+                        self.scalars[phase].add_record(i, float(record))
+                    self.count[phase] += 1
+                print('=>     {} {} {} data points loaded'.format(phase, name, self.count[phase]))
+                f.close()
 
     def add_record(self, phase, record):
-        self.scalars[phase].add_record(self.count[phase], record)
+        if phase != TRAIN or self.count[phase] % 10 == 0:
+            self.scalars[phase].add_record(self.count[phase], record)
+        self.fhandle[phase].write('{:.6f}\n'.format(record))
         self.count[phase] += 1
 
     @staticmethod

@@ -1,3 +1,5 @@
+best_models/
+records/
 *.pyc
 model_checkpoints*/
 log/

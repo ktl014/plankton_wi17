@@ -1,3 +1,5 @@
+import torch
+from torch.autograd import Variable
 import numpy as np
 import pandas as pd
 from astropy.modeling.models import Gaussian2D
@@ -113,3 +115,9 @@ def eval_euc_dists(pred_maps, targets):
     avg_dist = 0.5 * (head_dist + tail_dist)
 
     return {'head': head_dist, 'tail': tail_dist, 'average': avg_dist}
+
+
+def get_output_size(model, input_size):
+    inputs = torch.randn(1, 3, input_size, input_size)
+    y = model(Variable(inputs))
+    return y.size(-1)

@@ -3,9 +3,9 @@ CLASS = 'class'
 COORDINATES = 'coordinates'
 
 ALEXNET = 'alexnet'
-RESNET18 = 'resnet18'
+RESNET50 = 'resnet50'
 VGG16 = 'vgg16'
-MODELS = [ALEXNET, RESNET18, VGG16]
+MODELS = [ALEXNET, RESNET50, VGG16]
 
 HEAD_X = 'head_x_rel'
 HEAD_Y = 'head_y_rel'
