@@ -23,6 +23,32 @@ def show_arrow(image, coordinates, cls):
     plt.title(cls)
     plt.pause(0.001)
 
+def evalShowArrow(image, predcoordinates, gtruthcoordinates, cls):
+    if isinstance(image, (np.ndarray, list)):
+        image = np.copy(image)
+    elif isinstance(image, torch.FloatTensor):
+        image = (image.numpy()).transpose((1, 2, 0)).copy()
+
+    if isinstance(gtruthcoordinates, torch.FloatTensor):
+        gtruthcoordinates = gtruthcoordinates.numpy()
+
+    height, width = image.shape[:2]
+    predhead = (int (predcoordinates[0, 0] * width), int (predcoordinates[0, 1] * height))
+    predtail = (int (predcoordinates[1, 0] * width), int (predcoordinates[1, 1] * height))
+
+    gtruthhead = (int(gtruthcoordinates[0] * width), int(gtruthcoordinates[1] * height))
+    gtruthtail = (int(gtruthcoordinates[2] * width), int(gtruthcoordinates[3] * height))
+
+    headEuclid = euclidean (predhead, gtruthhead)
+    tailEuclid = euclidean (predtail, gtruthtail)
+    avgEuclid = 0.5 * (headEuclid + tailEuclid)
+    cv2.arrowedLine(image, gtruthtail, gtruthhead, (1., 0., 0.), 3)
+    cv2.arrowedLine (image, predtail, predhead, (0., 0., 1.), 3)
+    plt.imshow(image)
+    plt.axis('off')
+    plt.title ('Head:{:.03f}\n Tail:{:.03f}\n Avg:{:.03f}'.format (headEuclid, tailEuclid, avgEuclid))
+    plt.pause(0.001)
+
 
 def show_arrow_batch(sample_batched):
     images_batch, coordinates_batch, cls_batch = \
