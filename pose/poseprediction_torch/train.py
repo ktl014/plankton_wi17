@@ -241,6 +241,7 @@ class Trainer(object):
                 'state_dict': self.model.state_dict(),
                 'best_err': self.best_err,
                 'optimizer': self.optimizer.state_dict(),
+                'gpu_mode': self.gpu_mode
             }, is_best)
 
             print()
