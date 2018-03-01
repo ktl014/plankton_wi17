@@ -38,11 +38,11 @@ def estimateKeyPoints(model, data):
     return poseCoords
 
 def loadModel():
-    modelRoot = '/data3/ludi/plankton_wi17/pose/poseprediction_torch'
+    modelRoot = '/data3/ludi/plankton_wi17/pose/poseprediction_torch/best_models'
     model = PoseModel()
-    model = nn.DataParallel(model)  #TODO modify for AlexNet
-    model = model.cuda()
-    checkpoints = torch.load(modelRoot + '/model_checkpoints_2_26/model_best.pth.tar')
+#     model = nn.DataParallel(model)  #TODO modify for AlexNet
+    model = model.cuda(_GPU)
+    checkpoints = torch.load(modelRoot + '/alexnet/model_best.pth.tar')
     model.load_state_dict(checkpoints['state_dict'])
     return model
 
