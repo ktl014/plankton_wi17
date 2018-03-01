@@ -128,7 +128,7 @@ def group_specimen2class(imgList):
     order = [planktonLabels[spc][0] for spc in specimenIDs]
     orderSet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][0]==cls] for cls in set(order)}   # Order Lvl
     dataSet = {'Dataset': specimenIDs}
-    return [specimenSet, genusSet, familySet, orderSet, dataSet], specimenIDs
+    return {'Species':specimenSet, 'Genus':genusSet, 'Family':familySet, 'Order':orderSet,'Dataset':dataSet}, specimenIDs
 
 
 def plankton_labels():
@@ -208,5 +208,63 @@ def pose_variability(head_x, head_y, tail_x, tail_y, specimen_ids):
 
     # Compute entropy
     entropy = sps.entropy(prob.reshape(-1)) / np.log(10)
-    print entropy
     return entropy
+
+
+def specimen_normalization(pose, specimen_ids):
+    spc_size = np.zeros((pose.shape[0],))
+    for spc in set(specimen_ids):
+        idx = [i for i, spc_tmp in enumerate(specimen_ids) if spc_tmp == spc]
+        dist = np.sqrt((pose[idx] ** 2).sum(axis=1))
+        spc_size[idx] = np.percentile(dist, 95)
+    pose_norm = pose / spc_size[:, np.newaxis]
+    return pose_norm
+
+
+def pose_histogram2(pose, specimen_ids):
+    # Normalize pose by specimen size
+    pose_norm = specimen_normalization(pose, specimen_ids)
+
+    # Histogram grid
+    x_grid, y_grid = np.linspace(0., 1., 11), np.linspace(0., 1., 11)
+
+    # Compute histogram
+    h = np.zeros((x_grid.size - 1, y_grid.size - 1))
+    for xi in range(x_grid.size - 1):
+        for yi in range(y_grid.size - 1):
+            x_t = (x_grid[xi] <= pose_norm[:, 0]) * (pose_norm[:, 0] < x_grid[xi + 1])
+            y_t = (y_grid[yi] <= pose_norm[:, 1]) * (pose_norm[:, 1] < y_grid[yi + 1])
+            h[xi, yi] = (x_t * y_t).sum()
+    # print h
+
+    # Compute probability distribution
+    prob = h / h.sum()
+    # print prob
+
+    return prob
+
+
+def pose_variability2(pose, specimen_ids):
+    # Compute probability distribution
+    prob = pose_histogram2(pose, specimen_ids)
+
+    # Compute entropy
+    entropy = sps.entropy(prob.reshape(-1), base=10.)
+    return entropy
+
+
+def pose_diff2(pose_db1, specimen_ids_db1, pose_db2, specimen_ids_db2):
+    # Compute probability distribution
+    prob1 = pose_histogram2(pose_db1, specimen_ids_db1)
+    prob2 = pose_histogram2(pose_db2, specimen_ids_db2)
+
+    # Add regularization prior
+    eps = 0.01
+    prob1 += eps
+    prob1 /= prob1.sum()
+    prob2 += eps
+    prob2 /= prob2.sum()
+
+    # Compute KL divergence
+    kl_div = sps.entropy(prob1.reshape(-1), prob2.reshape(-1), base=10.)
+    return kl_div
