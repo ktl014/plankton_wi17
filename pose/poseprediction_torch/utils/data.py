@@ -276,5 +276,3 @@ def pose_diff2(pose_db1, specimen_ids_db1, pose_db2, specimen_ids_db2):
     # Compute KL divergence
     kl_div = sps.entropy(prob1.reshape(-1), prob2.reshape(-1), base=10.)
     return kl_div
-
->>>>>>> Kevin

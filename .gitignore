@@ -1,3 +1,5 @@
+predPose.p
+stats.txt
 best_models/
 records/
 *.pyc
