@@ -38,7 +38,7 @@ def estimateKeyPoints(model, data):
     return poseCoords
 
 def loadModel():
-    modelName = 'vgg16'
+    modelName = 'alexnet'
     modelRoot = '/data3/ludi/plankton_wi17/pose/poseprediction_torch/best_models'
     model = PoseModel(modelName)
     # model = nn.DataParallel(model)  #TODO modify for AlexNet
@@ -157,9 +157,9 @@ if __name__ == '__main__':
     predCoordinates = np.asarray(predCoordinates)/48.           # 48x48 coordinates --> relative head&tail coordinates
     savePredictionCoordinates(predCoordinates)
 
-    # Temporary
-    temp_predCoordinates = pickle.load(open('predPose.p', "rb"))
-    predCoordinates = np.asarray([np.fliplr(i) for i in temp_predCoordinates])
+    # # Temporary
+    # temp_predCoordinates = pickle.load(open('predPose.p', "rb"))
+    # predCoordinates = np.asarray([np.fliplr(i) for i in temp_predCoordinates])
 
     # Initialize pose & classes - Test Data
     headX, headY = datasets['test'].data['head_x_rel'], datasets['test'].data['head_y_rel']
