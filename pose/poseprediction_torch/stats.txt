@@ -1,5 +1,0 @@
-==========
-Dataset
-Head Distance: 0.257881830488
-Tail Distancce: 0.301680065726
-Average Distance: 0.257881830488
