@@ -1,5 +1,3 @@
-import torch
-from torch.autograd import Variable
 import numpy as np
 import pandas as pd
 from astropy.modeling.models import Gaussian2D
@@ -88,7 +86,7 @@ def coordinates_to_gaussian_map(coordinates, output_size, amplitude, sigma):
     return gaussian2d(x, y)
 
 
-def get_belief_map(coordinates, output_size, amplitude, sigma):
+def get_belief_map(coordinates, output_size, amplitude=1., sigma=5.):
     head_map = coordinates_to_gaussian_map(coordinates[:2], output_size, amplitude, sigma)
     tail_map = coordinates_to_gaussian_map(coordinates[2:], output_size, amplitude, sigma)
     bg_map = np.maximum(1 - head_map - tail_map, 0)
@@ -118,12 +116,6 @@ def eval_euc_dists(pred_maps, targets):
 
     return {'head': head_dist, 'tail': tail_dist, 'average': avg_dist}
 
-
-def get_output_size(model, input_size):
-    inputs = torch.randn(1, 3, input_size, input_size)
-    y = model(Variable(inputs))
-    return y.size(-1)
-
 def group_specimen2class(imgList):
     specimenIDs = [img.split('/')[0] for img in imgList]
     planktonLabels = plankton_labels()
@@ -145,7 +137,7 @@ def plankton_labels():
                      glob.glob ('/data4/plankton_wi17/plankton/images_orig/*/*')]
 
     # Load all labels
-    specimen_labels = [l.split ('\t') for l in open ('/data5/Plankton_wi18/specimen_taxonomy.txt').read ().splitlines ()[1:]]
+    specimen_labels = [l.split (',') for l in open ('/data5/Plankton_wi18/rawcolor_db2/classes/specimen_taxonomy.txt').read ().splitlines ()[1:]]
     specimen_labels = {l[0]: l[1:] for l in specimen_labels if not l[0].startswith ('google')}
     for spc in specimen_list:
         if spc not in specimen_labels:

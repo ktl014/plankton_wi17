@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from torchvision import utils
 import torch
-
+from scipy.spatial.distance import euclidean
 
 def show_arrow(image, coordinates, cls):
     if isinstance(image, (np.ndarray, list)):
@@ -31,7 +31,13 @@ def evalShowArrow(image, predcoordinates, gtruthcoordinates, cls):
 
     if isinstance(gtruthcoordinates, torch.FloatTensor):
         gtruthcoordinates = gtruthcoordinates.numpy()
-
+    
+    # Calculate euclidean
+    headEuclid = euclidean(predcoordinates[0], np.array([gtruthcoordinates[0],gtruthcoordinates[1]]))
+    tailEuclid = euclidean(predcoordinates[1], np.array([gtruthcoordinates[2],gtruthcoordinates[3]]))
+    avgEuclid = 0.5*(headEuclid + tailEuclid)
+    
+    # Convert coordinates 
     height, width = image.shape[:2]
     predhead = (int (predcoordinates[0, 0] * width), int (predcoordinates[0, 1] * height))
     predtail = (int (predcoordinates[1, 0] * width), int (predcoordinates[1, 1] * height))
@@ -39,9 +45,6 @@ def evalShowArrow(image, predcoordinates, gtruthcoordinates, cls):
     gtruthhead = (int(gtruthcoordinates[0] * width), int(gtruthcoordinates[1] * height))
     gtruthtail = (int(gtruthcoordinates[2] * width), int(gtruthcoordinates[3] * height))
 
-    headEuclid = euclidean (predhead, gtruthhead)
-    tailEuclid = euclidean (predtail, gtruthtail)
-    avgEuclid = 0.5 * (headEuclid + tailEuclid)
     cv2.arrowedLine(image, gtruthtail, gtruthhead, (1., 0., 0.), 3)
     cv2.arrowedLine (image, predtail, predhead, (0., 0., 1.), 3)
     plt.imshow(image)
@@ -76,3 +79,34 @@ def show_image_batch(images_batch):
     grid = grid.copy()
 
     plt.imshow(grid)
+
+def showHeadTailDistribution(clsHeadTailEuclid, fullDataset=False):
+    """
+    Plot head & tail distribution for a given class
+
+    example usage:
+    clsHeadTailEuclid = {'Head Distribution': headEuclid, 'Tail Distribution': tailEuclid}
+    showHeadTailDistribution(clsHeadTailEulcid, True)
+
+    :param clsHeadTailEuclid: dictionary with key --> part name, value --> array of Euclidean distances
+    :param fullDataset: boolean to decide number of bins
+    :return:
+    """
+    if fullDataset:
+        numBins = 500
+    else:
+        numBins = 50
+    numParts = 2
+    assert isinstance(clsHeadTailEuclid, dict)
+    assert len(clsHeadTailEuclid) == numParts
+
+    fig, axarr = plt.subplots(1, numParts, figsize=(15,4))
+    for i, part in enumerate(clsHeadTailEuclid):
+        clsMin, clsMean, clsMax, clsStd = clsHeadTailEuclid[part].min(), clsHeadTailEuclid[part].mean(), clsHeadTailEuclid[part].max(), np.std(clsHeadTailEuclid[part])
+        axarr[i].hist(clsHeadTailEuclid[part], numBins, range=[0.0, 1.0])
+        axarr[i].set_title(part)
+        axarr[i].text (0.65, 0.85,
+                           'Minimum: {:0.3f}\nMean: {:0.3f}\nMax: {:0.3f}\nStd: {:0.3f}'.format (clsMin, clsMean,
+                                                                                                 clsMax, clsStd),
+                           bbox=dict (facecolor='red', alpha=0.5),
+                           horizontalalignment='center', verticalalignment='center', transform=axarr[i + 2].transAxes)
