@@ -15,11 +15,14 @@ import cPickle as pickle
 import numpy as np
 import glob
 from scipy.spatial.distance import euclidean
+from utils.constants import *
 
+
+model_name = VGG16
 
 
 def savePredictionCoordinates(coordinates):
-    pickle.dump(coordinates, open("predPose.p", "wb"))
+    pickle.dump(coordinates, open("best_models/{}/predPose.p".format(model_name), "wb"))
     return 0
 
 def estimateKeyPoints(model, data):
@@ -38,18 +41,17 @@ def estimateKeyPoints(model, data):
     return poseCoords
 
 def loadModel():
-    modelName = 'alexnet'
     modelRoot = '/data3/ludi/plankton_wi17/pose/poseprediction_torch/best_models'
-    model = PoseModel(modelName)
+    model = PoseModel(model_name)
     # model = nn.DataParallel(model)  #TODO modify for AlexNet
     model = model.cuda(_GPU)
-    checkpoints = torch.load(modelRoot + '/{}/checkpoints/model_best.pth.tar'.format(modelName))
+    checkpoints = torch.load(modelRoot + '/{}/checkpoints/model_best.pth.tar'.format(model_name))
     model.load_state_dict(checkpoints['state_dict'])
     return model
 
 def logEvalStats(metrics):
     assert isinstance(metrics, dict)
-    with open('stats.txt', "w") as f:
+    with open('best_models/{}/stats.txt'.format(model_name), "w") as f:
         for cls in metrics:
             print "="*10 + '\n' + cls
             print "Head Distance: {}".format(metrics[cls]['Euclid']['Head Distance'])

@@ -9,7 +9,7 @@ class Rescale(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
+        image = sample['image']
 
         h, w = image.shape[:2]
         if isinstance(self.output_size, int):
@@ -24,23 +24,30 @@ class Rescale(object):
 
         image = cv2.resize(image, (new_w, new_h))
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
+        copy = {key: sample[key] for key in sample}
+        copy['image'] = image
+
+        return copy
 
 
 class ToTensor(object):
     def __call__(self, sample):
-        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
+        image_name, image, coordinates, cls, class_one_hot, target_map = \
+            sample['image_name'], sample['image'], sample['coordinates'], sample['cls'], sample['target_map'], sample['class_one_hot']
 
         image = image.transpose((2, 0, 1))
-        return {'image': torch.from_numpy(image),
+
+        return {'image_name': image_name,
+                'image': torch.from_numpy(image),
                 'coordinates': torch.from_numpy(coordinates),
                 'cls': cls,
+                'class_one_hot': torch.from_numpy(class_one_hot),
                 'target_map': torch.from_numpy(target_map)}
 
 
 class RandomHorizontalFlip(object):
     def __call__(self, sample, flip_prob=0.5):
-        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
+        image, coordinates, target_map = sample['image'], sample['coordinates'], sample['target_map']
 
         if np.random.rand() < flip_prob:
             image = image[:, ::-1, :].copy()
@@ -49,12 +56,15 @@ class RandomHorizontalFlip(object):
                 1 - coordinates[2], coordinates[3]])
             target_map = target_map[:, :, ::-1].copy()
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
+        copy = {key: sample[key] for key in sample}
+        copy['image'], copy['coordinates'], copy['target_map'] = image, coordinates, target_map
+
+        return copy
 
 
 class RandomVerticalFlip(object):
     def __call__(self, sample, flip_prob=0.5):
-        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
+        image, coordinates, target_map = sample['image'], sample['coordinates'], sample['target_map']
 
         if np.random.rand() < flip_prob:
             image = image[::-1, :, :].copy()
@@ -63,7 +73,10 @@ class RandomVerticalFlip(object):
                 coordinates[2], 1 - coordinates[3]])
             target_map = target_map[:, ::-1, :].copy()
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
+        copy = {key: sample[key] for key in sample}
+        copy['image'], copy['coordinates'], copy['target_map'] = image, coordinates, target_map
+
+        return copy
 
 
 class Normalize(object):
@@ -79,21 +92,26 @@ class Normalize(object):
         Returns:
             Tensor: Normalized image.
         """
-        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
+        image = sample['image']
 
         for t, m, s in zip(image, self.mean, self.std):
             t.sub_(m).div_(s)
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
+        copy = {key: sample[key] for key in sample}
+        copy['image'] = image
+
+        return copy
 
     def recover(self, sample):
-        image, coordinates, cls, target_map = sample['image'], sample['coordinates'], sample['cls'], sample['target_map']
-        image, coordinates, cls, target_map = image.clone(), coordinates.clone(), cls, target_map.clone()
+        image = sample['image'].clone()
 
         for t, m, s in zip(image, self.mean, self.std):
             t.add_(m).mul_(s)
 
-        return {'image': image, 'coordinates': coordinates, 'cls': cls, 'target_map': target_map}
+        copy = {key: sample[key] for key in sample}
+        copy['image'] = image
+
+        return copy
 
 
 class EmptyTransform(object):

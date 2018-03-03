@@ -1,8 +1,8 @@
 from __future__ import print_function, division
 
 import os
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="2"
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
 
 import torch.nn as nn
 import torch.optim as optim
@@ -153,7 +153,7 @@ class Trainer(object):
         else:
             while True:
                 now = datetime.datetime.now()
-                root = os.path.join(args.root, now.strftime('%Y-%m-%d_%H:%M:%S'))
+                root = os.path.join(args.root, args.model, now.strftime('%Y-%m-%d_%H:%M:%S'))
                 if not os.path.isdir(root):
                     os.makedirs(root)
                     print('=> record directory created at {}'.format(root))

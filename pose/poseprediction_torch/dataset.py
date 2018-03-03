@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-from utils.data import get_belief_map
+from utils.data import get_belief_map, to_one_hot
 from utils.constants import *
 from transform import *
 import os
@@ -20,6 +20,11 @@ class PlanktonDataset(Dataset):
         self.amp = amp
         self.std = std
 
+        self.level = GENUS
+        self.classes = sorted(self.data[self.level].unique())
+        self.class_to_index = {cls: i for i, cls in enumerate(self.classes)}
+        self.num_class = len(self.classes)
+
         if isinstance(output_size, int):
             self.output_size = (output_size, output_size)
         elif isinstance(output_size, tuple):
@@ -35,12 +40,15 @@ class PlanktonDataset(Dataset):
 
         image = io.imread(img_name).astype(np.float32) / 255.
         coordinates = np.asarray([self.data.loc[idx, c] for c in COORDINATES_LIST])
-        cls = [self.data.loc[idx, c] for c in CLASS_LIST]
+        cls = {c: self.data.loc[idx, c] for c in CLASS_LIST}
         target_map = get_belief_map(coordinates, self.output_size, self.amp, self.std)
+        class_one_hot = to_one_hot(self.class_to_index[cls[self.level]], self.num_class)
 
-        sample = {'image': image,
+        sample = {'image_name': img_name,
+                  'image': image,
                   'coordinates': coordinates,
                   'cls': cls,
+                  'class_one_hot': class_one_hot,
                   'target_map': target_map}
 
         if self.transform:
@@ -91,7 +99,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     matplotlib.use('Qt5Agg')
 
-    # img_dir = '/data5/Plankton_wi18/rawcolor_db/images'
+    # img_dir = '/data5/Plankton_wi18/rawcolor_db2/images'
     # csv_filename = 'data/data_train.csv'
     #
     # # # update old frame of results to new frame
