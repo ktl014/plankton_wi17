@@ -48,7 +48,7 @@ class PlanktonDataset(Dataset):
                   'image': image,
                   'coordinates': coordinates,
                   'cls': cls,
-                  'class_one_hot': class_one_hot,
+                  'class_index': self.class_to_index[cls[self.level]],
                   'target_map': target_map}
 
         if self.transform:
@@ -61,33 +61,61 @@ class DatasetWrapper(object):
     def __init__(self, phase, csv_filename, img_dir, input_size, output_size,
                  batch_size, amp, std):
 
-        normalizer = Normalize([0.5, 0.5, 0.5], [1, 1, 1])  # ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        self.phase = phase
+        self.csv_filename = csv_filename
+        self.img_dir = img_dir
+        self.input_size = input_size
+        self.output_size = output_size
+        self.batch_size = batch_size
+        self.amp = amp
+        self.std = std
 
-        data_transform = {
-            TRAIN: transforms.Compose([Rescale(input_size),
+        self.normalizer = Normalize([0.5, 0.5, 0.5], [1, 1, 1])  # ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+
+        self.data_transform = {
+            TRAIN: transforms.Compose([Rescale(self.input_size),
                                        RandomHorizontalFlip(),
                                        RandomVerticalFlip(),
                                        ToTensor(),
-                                       normalizer]),
-            VALID: transforms.Compose([Rescale(input_size),
+                                       self.normalizer]),
+            VALID: transforms.Compose([Rescale(self.input_size),
                                        ToTensor(),
-                                       normalizer]),
-            TEST:  transforms.Compose([Rescale(input_size),
+                                       self.normalizer]),
+            TEST:  transforms.Compose([Rescale(self.input_size),
                                        ToTensor(),
-                                       normalizer])
+                                       self.normalizer])
         }
 
-        self.dataset = PlanktonDataset(csv_file=csv_filename,
-                                       img_dir=img_dir,
-                                       transform=data_transform[phase],
-                                       amp=amp,
-                                       std=std,
-                                       output_size=output_size)
-        self.dataloader = DataLoader(self.dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+        self.dataset = PlanktonDataset(csv_file=self.csv_filename,
+                                       img_dir=self.img_dir,
+                                       transform=self.data_transform[self.phase],
+                                       amp=self.amp,
+                                       std=self.std,
+                                       output_size=self.output_size)
+        self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
         self.dataset_size = len(self.dataset)
 
     def __len__(self):
         return self.dataset_size
+
+    def get_output_size(self):
+        return self.output_size
+
+    def set_output_size(self, output_size):
+        self.output_size = output_size
+        self.dataset = PlanktonDataset(csv_file=self.csv_filename,
+                                       img_dir=self.img_dir,
+                                       transform=self.data_transform[self.phase],
+                                       amp=self.amp,
+                                       std=self.std,
+                                       output_size=self.output_size)
+        self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
+        self.dataset_size = len(self.dataset)
+
+    @staticmethod
+    def get_num_class(csv_filename):
+        dataset = PlanktonDataset(csv_filename, '')
+        return dataset.num_class
 
 
 if __name__ == '__main__':

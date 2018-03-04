@@ -94,7 +94,7 @@ def concatCoordinates(headX, headY, tailX, tailY):
     return headXY, tailXY, poseXY
 
 if __name__ == '__main__':
-    img_dir = '/data5/Plankton_wi18/rawcolor_db/images'
+    img_dir = '/data5/Plankton_wi18/rawcolor_db2/images'
     csv_filename = '/data5/lekevin/plankton/poseprediction/data/data_{}.csv'
 
     phases = ['train', 'valid', 'test']

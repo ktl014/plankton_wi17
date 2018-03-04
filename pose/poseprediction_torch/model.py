@@ -1,5 +1,5 @@
 import torch.nn as nn
-from torchvision.models import vgg16, resnet50
+from torchvision.models import vgg16, resnet50, vgg19_bn
 from torchvision.models.resnet import Bottleneck
 import torch.utils.model_zoo as model_zoo
 from utils.constants import *
@@ -21,6 +21,7 @@ class PoseClassModel(nn.Module):
 
     def forward(self, x):
         x = self.features_top(x)
+
         x_pose = self.cpm(x)
 
         x_class = self.features_bottom(x)
@@ -31,13 +32,38 @@ class PoseClassModel(nn.Module):
 
     @staticmethod
     def get_vgg16_arch(num_class):
-        vgg16_model = vgg16(pretrained=True)
-        features_top = nn.Sequential(*list(vgg16_model.features.children())[:23])
-        features_bottom = nn.Sequential(*list(vgg16_model.features.children())[23:])
+        vgg_model = vgg19_bn(pretrained=True)
+        features_top = nn.Sequential(*list(vgg_model.features.children())[:36])
+        features_bottom = nn.Sequential(*list(vgg_model.features.children())[36:])
+        # classifier = nn.Sequential(
+        #     nn.Sequential(*list(vgg16_model.classifier.children())[:-1]),
+        #     nn.Linear(4096, num_class)
+        # )
         classifier = nn.Sequential(
-            nn.Sequential(*list(vgg16_model.classifier.children())[:-1]),
-            nn.Linear(4096, num_class)
+            nn.Linear(512 * 12 * 12, 2048),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(2048, 2048),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(2048, num_class),
         )
+
+        # classifier = nn.Sequential(
+        #     nn.Conv2d(512, 4096, kernel_size=7),
+        #     nn.ReLU(True),
+        #     nn.Dropout(),
+        #     nn.Conv2d(4096, 4096, kernel_size=1),
+        #     nn.ReLU(True),
+        #     nn.Dropout(),
+        #     nn.Conv2d(4096, num_class, kernel_size=6)
+        # )
+        #
+        # classifier[0].weight = nn.Parameter(vgg16_model.classifier[0].weight.view(4096, 512, 7, 7).data)
+        # classifier[0].bias = nn.Parameter(vgg16_model.classifier[0].bias.data)
+        # classifier[3].weight = nn.Parameter(vgg16_model.classifier[3].weight.view(4096, 4096, 1, 1).data)
+        # classifier[3].bias = nn.Parameter(vgg16_model.classifier[3].bias.data)
+
         cpm = nn.Sequential(
             nn.Conv2d(512, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),

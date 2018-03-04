@@ -32,8 +32,8 @@ class Rescale(object):
 
 class ToTensor(object):
     def __call__(self, sample):
-        image_name, image, coordinates, cls, class_one_hot, target_map = \
-            sample['image_name'], sample['image'], sample['coordinates'], sample['cls'], sample['target_map'], sample['class_one_hot']
+        image_name, image, coordinates, cls, class_index, target_map = \
+            sample['image_name'], sample['image'], sample['coordinates'], sample['cls'], sample['class_index'], sample['target_map']
 
         image = image.transpose((2, 0, 1))
 
@@ -41,7 +41,7 @@ class ToTensor(object):
                 'image': torch.from_numpy(image),
                 'coordinates': torch.from_numpy(coordinates),
                 'cls': cls,
-                'class_one_hot': torch.from_numpy(class_one_hot),
+                'class_index': class_index,
                 'target_map': torch.from_numpy(target_map)}
 
 
