@@ -59,7 +59,8 @@ def main():
         print('=> Welcome KLe')
         usrRoot = '/data5/lekevin/plankton/poseprediction/poseprediction_torch'
         args.data = usrRoot + '/data'
-        args.root = usrRoot + '/best_models'
+        #args.root = usrRoot + '/best_models'
+        args.root = '/data3/ludi/plankton_wi17/pose/poseprediction_torch/best_models'
     elif args.user == 'DLu':
         print('=> Welcome DLu')
         usrRoot = '/data3/ludi/plankton_wi17/pose/poseprediction_torch/'
@@ -285,7 +286,7 @@ class Evaluator(object):
         self.datasets = datasets
         self.model = model
         self.predCoordinates = []
-        self.phases = [TEST]
+        self.phase = [TEST]
 
         self.root = self.getRootDir()
         self.checkpointDir = os.path.join(self.root, 'checkpoints')
@@ -295,9 +296,10 @@ class Evaluator(object):
             else GpuMode.SINGLE
         print('=> {} GPU mode, using GPU: {}'.format (self.gpuMode, os.environ.get ("CUDA_VISIBLE_DEVICES", '')))
 
-        self.toCuda()
+        #self.loadCheckPoint(os.path.join(self.checkpointDir, 'model_best.pth.tar'))
+        self.loadCheckPoint('/data5/lekevin/plankton/poseprediction/poseprediction_torch/best_models/vgg16/checkpoints/model_best.pth.tar')
 
-        self.loadCheckPoint(os.path.join(self.checkpointDir, 'checkpoint.pth.tar'))
+        self.toCuda()
 
     def getRootDir(self):
         root = os.path.join(args.root, args.model)
@@ -311,8 +313,15 @@ class Evaluator(object):
 
     def loadCheckPoint(self, filename):
         if os.path.isfile(filename):
-            print("Loading checkpoint '{}'".format(filename))
+            print("=> Loading checkpoint '{}'".format(filename))
             checkpoint = torch.load(filename)
+
+            self.gpuMode = checkpoint.get ('gpu_mode', GpuMode.SINGLE)
+            if checkpoint[self.gpuMode] == GpuMode.MULTI:
+                self.model = nn.DataParallel(self.model).cuda()
+            elif checkpoint[self.gpuMode] == GpuMode.SINGLE:
+                self.model = self.model.cuda(0)
+
             self.model.load_state_dict(checkpoint['state_dict'])
             print("=> Loaded checkpoint")
         else:
@@ -325,8 +334,8 @@ class Evaluator(object):
             self.model.eval()
             inputs, targetCls, targetMap, targetCoordinates = \
                 data['image'], data['class_index'], data['target_map'], data['coordinates']
-            inputs, target_map, target_class = \
-                self.to_variable (inputs), self.to_variable (target_map), self.to_variable (target_class)
+            inputs, targetMap, targetCls = \
+                self.to_variable (inputs), self.to_variable (targetMap), self.to_variable (targetCls)
 
             outputClass, outputPose = self.model(inputs)
             for j in range(len(outputPose)):
