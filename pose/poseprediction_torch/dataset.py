@@ -59,7 +59,7 @@ class PlanktonDataset(Dataset):
 
 class DatasetWrapper(object):
     def __init__(self, phase, csv_filename, img_dir, input_size, output_size,
-                 batch_size, amp, std):
+                 batch_size, amp, std, shuffle=True):
 
         self.phase = phase
         self.csv_filename = csv_filename
