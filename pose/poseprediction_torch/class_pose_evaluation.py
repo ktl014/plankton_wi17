@@ -180,23 +180,23 @@ if __name__ == '__main__':
     evaluator = Evaluator(PoseClassModel)
 
     """ EXAMPLE FOR ITERATOR"""
-    # for dataset_id in range(10):
-    #     root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
-    #     evaluator.set_root(root)
-    #     for i, checkpoint in enumerate(evaluator.get_checkpoints()):
-    #         for data in evaluator.generator(checkpoint):
-    #             inputs = data['input']
-    #             outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
-    #             gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
-    #             pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
-    #             loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
-    #             """ Do things """
-
-    """ EXAMPLE FOR EVALUATION """
     for dataset_id in range(10):
         root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
         evaluator.set_root(root)
         for i, checkpoint in enumerate(evaluator.get_checkpoints()):
-            evaluator.evaluate_checkpoint(checkpoint)
-            if i >= 0:
-                break
+            for data in evaluator.generator(checkpoint):
+                inputs = data['input']
+                outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
+                gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
+                pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
+                loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
+                """ Do things """
+
+    """ EXAMPLE FOR EVALUATION """
+    # for dataset_id in range(10):
+    #     root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
+    #     evaluator.set_root(root)
+    #     for i, checkpoint in enumerate(evaluator.get_checkpoints()):
+    #         evaluator.evaluate_checkpoint(checkpoint)
+    #         if i >= 0:
+    #             break
