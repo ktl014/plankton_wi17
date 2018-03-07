@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
     input_size = (384, 384)
 
-    _GPU = 2
+    _GPU = 5
 
     data_transform = {
         'train': transforms.Compose([
@@ -149,6 +149,8 @@ if __name__ == '__main__':
     predCoordinates = []
     nSmpl = len(dataloaders['test'])
 
+    output_size = get_output_size(model, input_size)
+
     # Estimate keypoints
     for i,data in enumerate(dataloaders['test']):
         temp = estimateKeyPoints(model, data)
@@ -156,7 +158,7 @@ if __name__ == '__main__':
         if i%100==0:
             print i,'/',nSmpl
     predCoordinates = [np.fliplr(i) for i in predCoordinates]   # (y,x) --> (x,y)
-    predCoordinates = np.asarray(predCoordinates)/48.           # 48x48 coordinates --> relative head&tail coordinates
+    predCoordinates = np.asarray(predCoordinates)/float(output_size)           # 48x48 coordinates --> relative head&tail coordinates
     savePredictionCoordinates(predCoordinates)
 
     # # Temporary

@@ -16,8 +16,12 @@ class PoseClassModel(nn.Module):
 
         self.num_class = num_class
 
-        if model_name == VGG16:
-            self.features_top, self.features_bottom, self.classifier, self.cpm = self.get_vgg16_arch(self.num_class)
+        if model_name == ALEXNET:
+            self.features_top, self.features_bottom, self.classifier, self.cpm = self.get_alexnet_arch(self.num_class)
+        elif model_name == RESNET50:
+            self.features_top, self.features_bottom, self.classifier, self.cpm = self.get_resnet_arch(self.num_class)
+        elif model_name == VGG16:
+            self.features_top, self.features_bottom, self.classifier, self.cpm = self.get_vgg_arch(self.num_class)
 
     def forward(self, x):
         x = self.features_top(x)
@@ -31,7 +35,76 @@ class PoseClassModel(nn.Module):
         return x_class, x_pose
 
     @staticmethod
-    def get_vgg16_arch(num_class):
+    def get_alexnet_arch(num_class):
+        model_url = 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth'
+
+        alexnet = ModifiedAlexNet()
+        alexnet.load_state_dict(model_zoo.load_url(model_url))
+        features_top = nn.Sequential(*list(alexnet.features.children())[:10])
+        features_bottom = nn.Sequential(
+            nn.Sequential(*list(alexnet.features.children())[10:]),
+            nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+            # nn.Conv2d(256, 4096, kernel_size=1),
+            # nn.AvgPool2d(kernel_size=11)
+            # nn.Conv2d(512, 256, kernel_size=3, padding=1),
+            # nn.MaxPool2d(kernel_size=2, stride=2),
+        )
+        # features_bottom = nn.Sequential(*list(alexnet.features.children())[10:])
+
+        classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
+            # nn.Dropout(),
+            # nn.Linear(4096, 4096),
+            # nn.ReLU(inplace=True),
+            nn.Linear(4096, num_class),
+        )
+
+        cpm = nn.Sequential(
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 512, kernel_size=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 3, kernel_size=1)
+        )
+
+        return features_top, features_bottom, classifier, cpm
+
+    @staticmethod
+    def get_resnet_arch(num_class):
+        resnet50_model = resnet50(pretrained=True)
+        features_top = nn.Sequential(*list(resnet50_model.children())[:6])
+
+        avg_pool = nn.AvgPool2d(12, stride=1)
+        features_bottom = nn.Sequential(*(list(resnet50_model.children())[6:-2]) + [avg_pool])
+
+        classifier = nn.Linear(2048, num_class)
+
+        downsample = nn.Sequential(
+            nn.Conv2d(512, 512, kernel_size=1, stride=1, bias=False),
+            nn.BatchNorm2d(512),
+        )
+        cpm = nn.Sequential(
+            Bottleneck(512, 128, 1, downsample),
+            Bottleneck(512, 128),
+            Bottleneck(512, 128),
+            Bottleneck(512, 128),
+            nn.Conv2d(512, 512, kernel_size=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 3, kernel_size=1)
+        )
+
+        return features_top, features_bottom, classifier, cpm
+
+    @staticmethod
+    def get_vgg_arch(num_class):
         vgg_model = vgg19_bn(pretrained=True)
         features_top = nn.Sequential(*list(vgg_model.features.children())[:36])
         features_bottom = nn.Sequential(*list(vgg_model.features.children())[36:])
@@ -40,13 +113,13 @@ class PoseClassModel(nn.Module):
         #     nn.Linear(4096, num_class)
         # )
         classifier = nn.Sequential(
-            nn.Linear(512 * 12 * 12, 2048),
+            nn.Linear(512 * 12 * 12, 512),
             nn.ReLU(True),
             nn.Dropout(),
-            nn.Linear(2048, 2048),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(2048, num_class),
+            # nn.Linear(2048, 2048),
+            # nn.ReLU(True),
+            # nn.Dropout(),
+            nn.Linear(512, num_class),
         )
 
         # classifier = nn.Sequential(
@@ -129,7 +202,7 @@ class PoseModel(nn.Module):
 
     @staticmethod
     def get_vgg16_arch():
-        pretrained = nn.Sequential(*list(vgg16(pretrained=True).features.children())[:23])
+        pretrained = nn.Sequential(*list(vgg16(pretrained=True).features.children())[:22])
         cpm = nn.Sequential(
             nn.Conv2d(512, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
@@ -200,9 +273,6 @@ class ModifiedAlexNet(nn.Module):
         x = x.view(x.size(0), 256 * 6 * 6)
         x = self.classifier(x)
         return x
-
-
-
 
 
 if __name__ == '__main__':

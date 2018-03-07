@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "6,7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
 import torch.nn as nn
 import torch.optim as optim
@@ -29,9 +29,9 @@ parser.add_argument('-d', '--dataset-id', default=0, type=int, metavar='N',
                     help='dataset id to use')
 parser.add_argument('--data', default='/data3/ludi/plankton_wi17/pose/poseprediction_torch/data/',
                     type=str, metavar='DIR', help='path to dataset')
-parser.add_argument('--root', default='/data3/ludi/plankton_wi17/pose/poseprediction_torch/records',
+parser.add_argument('--root', default='/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/',
                     type=str, metavar='PATH', help='root directory of the records')
-parser.add_argument('--img-dir', default='/data5/Plankton_wi18/rawcolor_db2/images',
+parser.add_argument('--img-dir', default='/data5/Plankton_wi18/rawcolor_db2/images/',
                     type=str, metavar='PATH', help='path to images')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
@@ -39,7 +39,7 @@ parser.add_argument('--model', '-m', metavar='MODEL', default=VGG16, choices=MOD
                     help='pretrained model: ' + ' | '.join(MODELS) + ' (default: {})'.format(VGG16))
 # parser.add_argument('-g', '--gpu', default=1, type=int, metavar='N',
 #                     help='GPU to use')
-parser.add_argument('--epochs', default=25, type=int, metavar='N',
+parser.add_argument('--epochs', default=31, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -59,7 +59,7 @@ parser.add_argument('--std', default=3., type=float, metavar='STD',
                     help='std of the gaussian belief map (default: 3)')
 parser.add_argument('-i', '--input-size', default=384, type=int, metavar='N',
                     help='input size of the network (default: 384)')
-parser.add_argument('--lr-step-size', default=15, type=int, metavar='N',
+parser.add_argument('--lr_step_size', default=10, type=int, metavar='N',
                     help='the step size of learning rate scheduler (default: 15)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
@@ -74,7 +74,7 @@ def main():
     csv_filename = os.path.join(args.data, 'pose_class/data_{}_%d.csv' % args.dataset_id)
 
     print('=> loading model...')
-    num_class = DatasetWrapper.get_num_class(csv_filename.format(TRAIN))
+    num_class = DatasetWrapper.get_num_class(csv_filename.format(TEST))
     print('=>     {} classes in total'.format(num_class))
     model = PoseClassModel(model_name=args.model, num_class=num_class)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -265,13 +265,17 @@ class Trainer(object):
                       .format(phase, term_log, time.time() - epoch_since))
                 print()
 
-            self.save_checkpoint({
+            state = {
                 'epoch': epoch + 1,
                 'state_dict': self.model.state_dict(),
                 'best_acc': self.best_acc,
                 'optimizer': self.optimizer.state_dict(),
                 'gpu_mode': self.gpu_mode
-            }, is_best)
+            }
+
+            self.save_checkpoint(state, is_best)
+            if VALID not in self.phases and epoch % 5 == 0:
+                self.save_checkpoint(state, False, filename='checkpoint-{}.pth.tar'.format(epoch))
 
             print()
 

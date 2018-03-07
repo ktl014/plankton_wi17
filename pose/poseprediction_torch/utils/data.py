@@ -124,7 +124,7 @@ def get_output_size(model, input_size):
     y = model(Variable(inputs))
     if isinstance(y, torch.FloatTensor):
         return y.size(-1)
-    else:
+    elif isinstance(y, tuple):
         return y[1].size(-1)
 
 def group_specimen2class(imgList):
@@ -293,3 +293,12 @@ def eval_class_acc(preds, targets):
     # print(type(pred_classes), type(targets))
     corrects = (pred_classes == targets.data).sum()
     return 1.0 * corrects / targets.size(0)
+
+
+def get_pred_classes(preds):
+    _, pred_classes = torch.max(preds.data, 1)
+    return pred_classes
+
+
+def get_pred_coordinates(output_map):
+    pass

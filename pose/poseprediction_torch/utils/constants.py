@@ -5,6 +5,7 @@ COORDINATES = 'coordinates'
 ALEXNET = 'alexnet'
 RESNET50 = 'resnet50'
 VGG16 = 'vgg16'
+VGG19 = 'vgg19'
 MODELS = [ALEXNET, RESNET50, VGG16]
 
 HEAD_X = 'head_x_rel'

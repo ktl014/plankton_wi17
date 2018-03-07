@@ -43,3 +43,25 @@ class Logger(object):
         for arg in vars(args):
             meta_file.write('{}: {}\n'.format(arg, getattr(args, arg)))
         meta_file.write('\n\n')
+
+    @staticmethod
+    def read_meta(meta_file):
+        class DotDict(dict):
+            __getattr__ = dict.get
+            __setattr__ = dict.__setitem__
+            __delattr__ = dict.__delitem__
+
+        args = DotDict()
+        for line in open(meta_file, 'r').read().splitlines():
+            if line:
+                key, value = line.split(': ')
+                try:
+                    value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
+                args[key] = value
+        return args
+

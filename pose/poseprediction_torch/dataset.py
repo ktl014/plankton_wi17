@@ -42,7 +42,7 @@ class PlanktonDataset(Dataset):
         coordinates = np.asarray([self.data.loc[idx, c] for c in COORDINATES_LIST])
         cls = {c: self.data.loc[idx, c] for c in CLASS_LIST}
         target_map = get_belief_map(coordinates, self.output_size, self.amp, self.std)
-        class_one_hot = to_one_hot(self.class_to_index[cls[self.level]], self.num_class)
+        # class_one_hot = to_one_hot(self.class_to_index[cls[self.level]], self.num_class)
 
         sample = {'image_name': img_name,
                   'image': image,
@@ -92,7 +92,7 @@ class DatasetWrapper(object):
                                        amp=self.amp,
                                        std=self.std,
                                        output_size=self.output_size)
-        self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
+        self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=(phase == TRAIN), num_workers=4)
         self.dataset_size = len(self.dataset)
 
     def __len__(self):
@@ -101,16 +101,16 @@ class DatasetWrapper(object):
     def get_output_size(self):
         return self.output_size
 
-    def set_output_size(self, output_size):
-        self.output_size = output_size
-        self.dataset = PlanktonDataset(csv_file=self.csv_filename,
-                                       img_dir=self.img_dir,
-                                       transform=self.data_transform[self.phase],
-                                       amp=self.amp,
-                                       std=self.std,
-                                       output_size=self.output_size)
-        self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
-        self.dataset_size = len(self.dataset)
+    # def set_output_size(self, output_size):
+    #     self.output_size = output_size
+    #     self.dataset = PlanktonDataset(csv_file=self.csv_filename,
+    #                                    img_dir=self.img_dir,
+    #                                    transform=self.data_transform[self.phase],
+    #                                    amp=self.amp,
+    #                                    std=self.std,
+    #                                    output_size=self.output_size)
+    #     self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
+    #     self.dataset_size = len(self.dataset)
 
     @staticmethod
     def get_num_class(csv_filename):
