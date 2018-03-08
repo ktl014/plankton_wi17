@@ -18,6 +18,7 @@ from utils.constants import *
 from utils.data import *
 from logger import Logger
 
+DEBUG = False
 
 class Evaluator(object):
     def __init__(self, model_class):
@@ -27,6 +28,7 @@ class Evaluator(object):
         self.phases = [TRAIN, TEST]
         cudnn.benchmark = True
         self.log_vars = ['loss', 'class_loss', 'pose_loss', 'class_accuracy', 'pose_error']
+        self.datasetMetric = {datasetID:{} for datasetID in range(10)}
 
         # preload
         self.model_name, self.num_class = RESNET50, 19
@@ -60,7 +62,7 @@ class Evaluator(object):
                                       amp=self.args.amp,
                                       std=self.args.std) for phase in self.phases}
 
-        self.clsMetrics = {cls:{} for cls in self.dataset[TRAIN].dataset.classes}
+        self.datasetMetric[self.args.dataset_id] = {cls:{} for cls in self.dataset[TRAIN].dataset.classes}
         self.root = root
 
     def initialize_posemetrics(self, phase):
@@ -226,93 +228,85 @@ class Evaluator(object):
         for i in range(self.num_class):
             cmRate[i,:] = cmRawCount[i,:] / clsCount[i,0] * 100
 
-        for i,cls in enumerate(self.clsMetrics):
-            self.clsMetrics[cls]['Accuracy'] = cmRate.diagonal()[i]
+        for i,cls in enumerate(self.datasetMetric[self.args.dataset_id]):
+            self.datasetMetric[self.args.dataset_id][cls]['Accuracy'] = cmRate.diagonal()[i]
 
         #TODO Insert histogram of class accuracies / confusion matrix
 
     def score_poseprediction(self, pred):
         predCoordinates = np.array(invert_batchgrouping(pred))
-        self.gtruthHead, self.gtruthTail, self.poseTestSet = self.initialize_posemetrics(phase=TEST)
+        self.gtruthHead, self.gtruthTail, _ = self.initialize_posemetrics(phase=TEST)
         self.testTaxLvlDatasets, self.testspecimenIDs = group_specimen2class (self.dataset[TEST].dataset.data['images'])
         self.level = 'Genus'
 
         for i,cls in enumerate(self.testTaxLvlDatasets[self.level]):
             testIdx = [i for i, spc in enumerate(self.testspecimenIDs) if spc in self.testTaxLvlDatasets[self.level][cls]]
-            self.clsMetrics[cls]['Euclid'] = euclideanDistance(predCoordinates[testIdx], self.gtruthHead[testIdx], self.gtruthTail[testIdx])
-        avgEuclid = np.array ([self.clsMetrics[cls]['Euclid']['Avg Distance'] for cls in self.clsMetrics])
+            self.datasetMetric[self.args.dataset_id][cls]['Euclid'] = euclideanDistance(predCoordinates[testIdx], self.gtruthHead[testIdx], self.gtruthTail[testIdx])
+        avgEuclid = np.array ([self.datasetMetric[self.args.dataset_id][cls]['Euclid']['Avg Distance'] for cls in self.datasetMetric[self.args.dataset_id]])
         print('=> Avg Euclid: {:0.3f}'.format(avgEuclid.mean()))
 
         #TODO insert histogram of euclid distance per class
 
+    def score_entiredataset(self):
+        print('=> Results over 10 randomly sampled test sets')
+        avgAccu, avgEuclid = [], []
+        try:
+            for i in self.datasetMetric:
+                avgAccu += [self.datasetMetric[i][cls]['Accuracy'] for cls in self.datasetMetric[i]]
+                avgEuclid += [self.datasetMetric[i][cls]['Euclid']['Avg Distance'] for cls in self.datasetMetric[i]]
+            avgAccu = np.array(avgAccu)
+            avgEuclid = np.array(avgEuclid)
+            print('=> Overall Accuracy [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'.format(avgAccu.mean(),
+                                                                                avgAccu.min(),
+                                                                                avgAccu.max(),
+                                                                                np.std(avgAccu)))
+            print ('=> Overall Euclidean [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'.format (avgEuclid.mean (),
+                                                                                  avgEuclid.min (),
+                                                                                  avgEuclid.max (),
+                                                                                  np.std (avgEuclid)))
+        except:
+            print("=> ERROR: Results for all 10 datasets are incomplete")
 
 if __name__ == '__main__':
     evaluator = Evaluator(PoseClassModel)
 
-    """ Testing """
-    # root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format (0)
-    # evaluator.set_root (root)
-    # gt_classes, gt_coordinates = [], []
-    # pred_classes, pred_coordinates = [], []
-    # checkpoint = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/0/checkpoints/checkpoint-10.pth.tar'
-    # for data in evaluator.generator (checkpoint):
-    #     inputs = data['inputs']
-    #     outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
-    #     # gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
-    #     # pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
-    #     loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
-    #
-    #     gt_classes.append (data['gt_classes'].data)
-    #     gt_coordinates.append (data['gt_coordinates'])
-    #     pred_classes.append (data['pred_classes'])
-    #     pred_coordinates.append (data['pred_coordinates'])
-    #     """ Do things """
-    #
-    # print ('=> Evaluation Results')
-    # evaluator.score_classification (pred=pred_classes, gtruth=gt_classes)
-    # evaluator.score_poseprediction (pred=pred_coordinates)
-    # evaluator.compute_posevariabilityDataset()
-    # pickle.dump(evaluator.clsMetrics, open('tmp/clsMetrics.p', "wb"))
-    DEBUG = True
-    """ EXAMPLE FOR ITERATOR"""
-    datasetMetrics ={}
+    """ DATASET ITERATOR """
     for dataset_id in range(10):
         print('=> Dataset {}'.format(dataset_id))
         root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
         evaluator.set_root(root)
-        # gt_classes, gt_coordinates = [], []
-        # pred_classes, pred_coordinates = [], []
+        gt_classes, gt_coordinates = [], []
+        pred_classes, pred_coordinates = [], []
+
+        """ UNCOMMENT & TAB SECTION BELOW TO EVALUATE EACH CHECKPOINT"""
         # for i, checkpoint in enumerate(evaluator.get_checkpoints()):
-        # checkpoint = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/0/checkpoints/checkpoint-15.pth.tar'
-        # for data in evaluator.generator(checkpoint):
-        #     inputs = data['inputs']
-        #     outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
-        #     # gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
-        #     # pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
-        #     loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
-        #
-        #     gt_classes.append(data['gt_classes'].data)
-        #     gt_coordinates.append(data['gt_coordinates'])
-        #     pred_classes.append(data['pred_classes'])
-        #     pred_coordinates.append(data['pred_coordinates'])
-        #     """ Do things """
+        default_checkpoint = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/0/checkpoints/checkpoint-15.pth.tar'
+        for data in evaluator.generator(default_checkpoint):
+            inputs = data['inputs']
+            outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
+            # gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
+            # pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
+            loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
+
+            gt_classes.append(data['gt_classes'].data)
+            gt_coordinates.append(data['gt_coordinates'])
+            pred_classes.append(data['pred_classes'])
+            pred_coordinates.append(data['pred_coordinates'])
 
         if DEBUG:
             root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/'
-            gt_classes = pickle.load(open(root + 'tmp1/gtCls.p', "rb"))
+            gt_classes = pickle.load(open(root + 'tmp/gtCls.p', "rb"))
             gt_classes = [gt_classes[i].data for i, idx in enumerate(gt_classes)]
-            pred_classes = pickle.load(open(root + 'tmp1/predCls.p', "rb"))
-            pred_coordinates = pickle.load(open(root + 'tmp1/predCoord.p', "rb"))
+            pred_classes = pickle.load(open(root + 'tmp/predCls.p', "rb"))
+            pred_coordinates = pickle.load(open(root + 'tmp/predCoord.p', "rb"))
 
         print('=> Evaluation Results')
         evaluator.score_classification(pred=pred_classes, gtruth=gt_classes)
         evaluator.score_poseprediction(pred = pred_coordinates)
         #evaluator.compute_posevariabilityDataset()
-        datasetMetrics[dataset_id] = evaluator.clsMetrics
-        print('=> Checkpoint saved')
-        pickle.dump (datasetMetrics, open ('tmp/datasetMetrics.p', "wb"))
+    evaluator.score_entiredataset()
 
-    # """ TEST: Compute Pose Variability """
+    """ TEST: Compute Pose Variability """
     # PoseVarMetrics = {}
     # for dataset_id in range (10):
     #     print ('=> Dataset {}'.format (dataset_id))
