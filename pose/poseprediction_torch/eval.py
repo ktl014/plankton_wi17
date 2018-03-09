@@ -42,10 +42,15 @@ def estimateKeyPoints(model, data):
 
 def loadModel():
     modelRoot = '/data3/ludi/plankton_wi17/pose/poseprediction_torch/best_models'
-    model = PoseModel(model_name)
-    # model = nn.DataParallel(model)  #TODO modify for AlexNet
-    model = model.cuda(_GPU)
     checkpoints = torch.load(modelRoot + '/{}/checkpoints/model_best.pth.tar'.format(model_name))
+    gpu_mode = checkpoints.get('gpu_mode', GpuMode.SINGLE)
+
+    model = PoseModel(model_name)
+    if gpu_mode == GpuMode.MULTI:
+        model = nn.DataParallel(model).cuda()
+    elif gpu_mode == GpuMode.SINGLE:
+        model = model.cuda(_GPU)
+
     model.load_state_dict(checkpoints['state_dict'])
     return model
 

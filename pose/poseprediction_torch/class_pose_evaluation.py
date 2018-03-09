@@ -1,8 +1,8 @@
 from __future__ import print_function, division
 
 import os
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "9"
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "9"
 
 import torch
 import torch.nn as nn
@@ -10,6 +10,7 @@ import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 
 import time
+import numpy as np
 
 from dataset import DatasetWrapper
 from model import PoseClassModel
@@ -164,7 +165,7 @@ class Evaluator(object):
 
             term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / total) for var in self.log_vars])
             print('{} {}/{} ({:.0f}%), {}, ETA: {:.0f}s     \r'
-                  .format('Training' if self.phase == TRAIN else 'validating', total, len(self.dataset),
+                  .format('Training' if self.phase == TRAIN else 'testing', total, len(self.dataset),
                           100.0 * total / len(self.dataset), term_log, eta), end='')
 
         epoch_vars = {var: running_vars[var] / len(self.dataset) for var in self.log_vars}
@@ -175,28 +176,40 @@ class Evaluator(object):
               .format(self.phase, term_log, time.time() - epoch_since))
         print()
 
+        return epoch_vars
+
 
 if __name__ == '__main__':
     evaluator = Evaluator(PoseClassModel)
 
     """ EXAMPLE FOR ITERATOR"""
-    for dataset_id in range(10):
-        root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
-        evaluator.set_root(root)
-        for i, checkpoint in enumerate(evaluator.get_checkpoints()):
-            for data in evaluator.generator(checkpoint):
-                inputs = data['input']
-                outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
-                gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
-                pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
-                loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
-                """ Do things """
-
-    """ EXAMPLE FOR EVALUATION """
     # for dataset_id in range(10):
     #     root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
     #     evaluator.set_root(root)
     #     for i, checkpoint in enumerate(evaluator.get_checkpoints()):
-    #         evaluator.evaluate_checkpoint(checkpoint)
-    #         if i >= 0:
+    #         for data in evaluator.generator(checkpoint):
+    #             inputs = data['input']
+    #             outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
+    #             gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
+    #             pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
+    #             loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
+    #             """ Do things """
+
+    """ EXAMPLE FOR EVALUATION """
+    # accs = []
+    # for dataset_id in range(10):
+    #     root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
+    #     evaluator.set_root(root)
+    #     acc = 0
+    #     for i, checkpoint in enumerate(evaluator.get_checkpoints()):
+    #         metrics = evaluator.evaluate_checkpoint(checkpoint)
+    #         acc = max(acc, metrics['class_accuracy'])
+    #         if i >= 1:
     #             break
+    #     accs.append(acc)
+    # print(accs)
+    # print(np.mean(accs))
+
+    root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/2018-03-07_02:20:09'
+    evaluator.set_root(root)
+    evaluator.evaluate_checkpoint('checkpoint-19.pth.tar')

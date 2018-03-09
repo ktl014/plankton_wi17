@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from utils.data import get_belief_map, to_one_hot
@@ -24,6 +25,8 @@ class PlanktonDataset(Dataset):
         self.classes = sorted(self.data[self.level].unique())
         self.class_to_index = {cls: i for i, cls in enumerate(self.classes)}
         self.num_class = len(self.classes)
+        self.class_weights = self.num_class * \
+            1. / (self.data[self.level].value_counts(normalize=True).sort_index().values.astype(np.float32) ** 1)
 
         if isinstance(output_size, int):
             self.output_size = (output_size, output_size)
@@ -101,16 +104,11 @@ class DatasetWrapper(object):
     def get_output_size(self):
         return self.output_size
 
-    # def set_output_size(self, output_size):
-    #     self.output_size = output_size
-    #     self.dataset = PlanktonDataset(csv_file=self.csv_filename,
-    #                                    img_dir=self.img_dir,
-    #                                    transform=self.data_transform[self.phase],
-    #                                    amp=self.amp,
-    #                                    std=self.std,
-    #                                    output_size=self.output_size)
-    #     self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=True, num_workers=4)
-    #     self.dataset_size = len(self.dataset)
+    def get_class_weights(self):
+        return torch.from_numpy(self.dataset.class_weights)
+
+    def get_class_index(self):
+        return self.dataset.class_to_index
 
     @staticmethod
     def get_num_class(csv_filename):

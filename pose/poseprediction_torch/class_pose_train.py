@@ -1,8 +1,8 @@
 from __future__ import print_function, division
 
 import os
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
 import torch.nn as nn
 import torch.optim as optim
@@ -74,7 +74,7 @@ def main():
     csv_filename = os.path.join(args.data, 'pose_class/data_{}_%d.csv' % args.dataset_id)
 
     print('=> loading model...')
-    num_class = DatasetWrapper.get_num_class(csv_filename.format(TEST))
+    num_class = DatasetWrapper.get_num_class(csv_filename.format(TRAIN))
     print('=>     {} classes in total'.format(num_class))
     model = PoseClassModel(model_name=args.model, num_class=num_class)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -102,9 +102,10 @@ class Trainer(object):
         self.model = model
         self.optimizer = optimizer
         self.scheduler = scheduler
-        self.mse_loss = nn.MSELoss()
-        self.cross_entropy_loss = nn.CrossEntropyLoss()
-        self.phases = [TRAIN, VALID] if args.evaluate else [TRAIN]
+
+        self.class_weights = self.datasets[TRAIN].get_class_weights()
+
+        self.phases = [TRAIN, TEST] if args.evaluate else [TRAIN]
 
         self.root = self.get_root_dir()
         self.log_dir = os.path.join(self.root, 'log')
@@ -116,6 +117,9 @@ class Trainer(object):
         print('=> {} GPU mode, using GPU: {}'.format(self.gpu_mode, os.environ.get("CUDA_VISIBLE_DEVICES", '')))
 
         self.to_cuda()
+
+        self.mse_loss = nn.MSELoss()
+        self.cross_entropy_loss = nn.CrossEntropyLoss(weight=self.class_weights)
 
         self.best_model_wts = copy.deepcopy(model.state_dict())
         self.best_acc = 0
@@ -180,8 +184,10 @@ class Trainer(object):
     def to_cuda(self):
         if self.gpu_mode == GpuMode.MULTI:
             self.model = nn.DataParallel(self.model).cuda()
+            self.class_weights = self.class_weights.cuda()
         elif self.gpu_mode == GpuMode.SINGLE:
             self.model = self.model.cuda(0)
+            self.class_weights = self.class_weights.cuda(0)
 
     def to_variable(self, tensor):
         if self.gpu_mode == GpuMode.MULTI:
@@ -246,18 +252,19 @@ class Trainer(object):
 
                     term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / total) for var in self.log_vars])
                     print('{} {}/{} ({:.0f}%), {}, ETA: {:.0f}s     \r'
-                          .format('Training' if phase == TRAIN else 'validating', total, len(self.datasets[phase]),
+                          .format('Training' if phase == TRAIN else 'testing', total, len(self.datasets[phase]),
                                   100.0 * total / len(self.datasets[phase]), term_log, eta), end='')
 
                 epoch_vars = {var: running_vars[var] / len(self.datasets[phase]) for var in self.log_vars}
 
-                if phase == VALID:
+                if phase in [VALID, TEST]:
                     for var in self.log_vars:
                         self.loggers[var].add_record(phase, epoch_vars[var])
                     is_best = epoch_vars[self.main_var] < self.best_acc
                     if is_best:
                         self.best_acc = epoch_vars[self.main_var]
                         self.best_model_wts = copy.deepcopy(self.model.state_dict())
+                    print('best test accuracy so far: {}'.format(self.best_acc))
 
                 print()
                 term_log = ', '.join(['{}: {:.4f}'.format(var, epoch_vars[var]) for var in self.log_vars])
@@ -274,7 +281,7 @@ class Trainer(object):
             }
 
             self.save_checkpoint(state, is_best)
-            if VALID not in self.phases and epoch % 5 == 0:
+            if VALID not in self.phases and (epoch + 1) % 5 == 0:
                 self.save_checkpoint(state, False, filename='checkpoint-{}.pth.tar'.format(epoch))
 
             print()
