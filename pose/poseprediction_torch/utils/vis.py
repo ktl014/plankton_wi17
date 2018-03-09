@@ -117,7 +117,7 @@ def plotPoseVarKLDiv(metric, ylbl=None):
     """ TEMPORARY BEGIN """
     #TODO Incorporate calculating pose variability & kl divergence into dataset creation
     poseVar, kldiv = [], []
-    PoseVarMetrics = pickle.load(open('tmp/PoseVarMetrics.p', 'rb'))
+    PoseVarMetrics = pickle.load(open('backUpData/PoseVarMetrics.p', 'rb'))
     for i in PoseVarMetrics:
         poseVar += [PoseVarMetrics[i][cls]['PoseVar'] for cls in PoseVarMetrics[i]]
         kldiv += [PoseVarMetrics[i][cls]['KLDiv'] for cls in PoseVarMetrics[i]]
