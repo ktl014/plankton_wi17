@@ -124,10 +124,16 @@ def eval_euc_dists(pred_maps, targets):
 def get_output_size(model, input_size):
     inputs = torch.randn(1, 3, input_size, input_size)
     y = model(Variable(inputs))
-    if isinstance(y, torch.FloatTensor):
-        return y.size(-1)
-    elif isinstance(y, tuple):
-        return y[1].size(-1)
+    try:
+        if isinstance(y, torch.autograd.variable.Variable):
+            return y.size(-1)
+        elif isinstance (y, tuple):
+            return y[1].size(-1)
+        else:
+            raise TypeError
+    except:
+        print('ERROR @ utils.get_output_size(): Invalid type returned from output of model')
+        assert False
 
 def group_specimen2class(imgList):
     specimenIDs = [img.split('/')[0] for img in imgList]

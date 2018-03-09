@@ -240,6 +240,55 @@ class PoseModel(nn.Module):
         return pretrained, cpm
 
 
+class ClassModel (nn.Module):
+    __names__ = {ALEXNET, VGG16, RESNET50}
+
+    def __init__(self, model_name, num_class):
+        super (ClassModel, self).__init__ ()
+
+        # check if the model name is allowed
+        assert model_name in ClassModel.__names__
+
+        self.num_class = num_class
+
+        # if model_name == RESNET50:
+        self.features_top, self.features_bottom, self.classifier = self.get_resnet_arch(self.num_class)
+
+        # if model_name == ALEXNET:
+        #     self.features_top, self.features_bottom, self.classifier = self.get_alexnet_arch(self.num_class)
+        # elif model_name == RESNET50:
+        #     self.features_top, self.features_bottom, self.classifier = self.get_resnet_arch(self.num_class)
+        # elif model_name == VGG16:
+        #     self.features_top, self.features_bottom, self.classifier = self.get_vgg_arch(self.num_class)
+
+    def forward(self, x):
+        x = self.features_top(x)
+
+        x_class = self.features_bottom(x)
+        x_class = x_class.view(x.size(0), -1)
+        x_class = self.classifier(x_class)
+
+        return x_class
+
+    @staticmethod
+    def get_resnet_arch(num_class):
+        # resnet50_model = resnet50 (pretrained=True)
+        # features_top = nn.Sequential (*list (resnet50_model.children ())[:6])
+        #
+        # avg_pool = nn.AvgPool2d (12, stride=1)
+        # features_bottom = nn.Sequential (*list (resnet50_model.children ())[6:-2]) + [avg_pool]
+        #
+        # classifier = nn.Linear (2048, num_class)
+        resnet50_model = resnet50 (pretrained=True)
+        features_top = nn.Sequential (*list (resnet50_model.children ())[:6])
+
+        avg_pool = nn.AvgPool2d (12, stride=1)
+        features_bottom = nn.Sequential (*(list (resnet50_model.children ())[6:-2]) + [avg_pool])
+
+        classifier = nn.Linear (2048, num_class)
+
+        return features_top, features_bottom, classifier
+
 class ModifiedAlexNet(nn.Module):
     def __init__(self, num_classes=1000):
         super(ModifiedAlexNet, self).__init__()
@@ -273,6 +322,7 @@ class ModifiedAlexNet(nn.Module):
         x = x.view(x.size(0), 256 * 6 * 6)
         x = self.classifier(x)
         return x
+
 
 
 if __name__ == '__main__':
