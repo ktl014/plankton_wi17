@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from torchvision import utils
 import torch
 from scipy.spatial.distance import euclidean
+import cPickle as pickle
 
 def show_arrow(image, coordinates, cls):
     if isinstance(image, (np.ndarray, list)):
@@ -110,3 +111,36 @@ def showHeadTailDistribution(clsHeadTailEuclid, fullDataset=False):
                                                                                                  clsMax, clsStd),
                            bbox=dict (facecolor='red', alpha=0.5),
                            horizontalalignment='center', verticalalignment='center', transform=axarr[i + 2].transAxes)
+
+def plotPoseVarKLDiv(metric, ylbl=None):
+
+    """ TEMPORARY BEGIN """
+    #TODO Incorporate calculating pose variability & kl divergence into dataset creation
+    poseVar, kldiv = [], []
+    PoseVarMetrics = pickle.load(open('backUpData/PoseVarMetrics.p', 'rb'))
+    for i in PoseVarMetrics:
+        poseVar += [PoseVarMetrics[i][cls]['PoseVar'] for cls in PoseVarMetrics[i]]
+        kldiv += [PoseVarMetrics[i][cls]['KLDiv'] for cls in PoseVarMetrics[i]]
+        label += [dummyLbl for dummyLbl, cls in enumerate(PoseVarMetrics[0])]
+    classes = PoseVarMetrics[0].keys()
+    """ TEMPORARY END"""
+
+    N = len(label)
+    cmap = plt.cm.jet
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+    cmap = cmap.from_list('Custom cmap', cmaplist, cmap.N)
+    bounds = np.linspace(0,N,N+1)
+    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+
+    fig, axarr = plt.subplots(1,2, figsize=(15,4))
+    scat = axarr[0].scatter(poseVar, metric, c=label, cmap=cmap, marker='x')
+    axarr[0].set_xlabel('Pose Variability'); axarr[0].set_ylabel(ylbl)
+    axarr[0].set_title('Pose Variability vs {} (Class by Class)'.format(ylbl))
+
+    scat1 = axarr[1].scatter(kldiv, metric, c=label, marker='x', cmap=cmap)
+    axarr[1].set_xlabel('KL Divergence Train & Test Set'); axarr[1].set_ylabel(ylbl)
+    axarr[1].set_title('KL Divergence vs {} (Class by Class)'.format(ylbl))
+    cb1 = plt.colorbar(scat1, spacing='proportional',ticks=bounds)
+    cb1.set_label('Classes')
+    cb1.set_ticklabels(classes)
+    plt.show()

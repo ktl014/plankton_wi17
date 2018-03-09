@@ -10,6 +10,8 @@ from PIL import Image
 from constants import *
 import glob
 import scipy.stats as sps
+from scipy.spatial.distance import euclidean
+
 
 
 def url_to_filename(img_url):
@@ -122,10 +124,16 @@ def eval_euc_dists(pred_maps, targets):
 def get_output_size(model, input_size):
     inputs = torch.randn(1, 3, input_size, input_size)
     y = model(Variable(inputs))
-    if isinstance(y, torch.FloatTensor):
-        return y.size(-1)
-    elif isinstance(y, tuple):
-        return y[1].size(-1)
+    try:
+        if isinstance(y, torch.autograd.variable.Variable):
+            return y.size(-1)
+        elif isinstance (y, tuple):
+            return y[1].size(-1)
+        else:
+            raise TypeError
+    except:
+        print('ERROR @ utils.get_output_size(): Invalid type returned from output of model')
+        assert False
 
 def group_specimen2class(imgList):
     specimenIDs = [img.split('/')[0] for img in imgList]
@@ -148,7 +156,7 @@ def plankton_labels():
                      glob.glob ('/data4/plankton_wi17/plankton/images_orig/*/*')]
 
     # Load all labels
-    specimen_labels = [l.split ('\t') for l in open ('/data5/Plankton_wi18/specimen_taxonomy.txt').read ().splitlines ()[1:]]
+    specimen_labels = [l.split (',') for l in open ('/data5/Plankton_wi18/rawcolor_db2/classes/specimen_taxonomy.txt').read ().splitlines ()[1:]]
     specimen_labels = {l[0]: l[1:] for l in specimen_labels if not l[0].startswith ('google')}
     for spc in specimen_list:
         if spc not in specimen_labels:
@@ -300,5 +308,34 @@ def get_pred_classes(preds):
     return pred_classes
 
 
-def get_pred_coordinates(output_map):
-    pass
+def get_pred_coordinates(output_coord):
+    pred_coordinates = []
+    for i in range(len(output_coord)):
+        pred_maps = output_coord[i].cpu().data.numpy()
+        temp = np.stack([np.unravel_index(p.argmax(), p.shape) for p in pred_maps])
+        pred_coordinates.append(np.fliplr(temp)/48.)
+    return pred_coordinates
+
+def invert_batchgrouping(batch):
+    inverted_batch = []
+    for i in range(len(batch)):
+        inverted_batch += [batch[i][j] for j in range(len(batch[i]))]
+    return inverted_batch
+
+def euclideanDistance(prediction, gtruthHead, gtruthTail):
+    headEuclid, tailEuclid = [], []
+    head, tail = 0, 1
+    nSmpl = len(prediction)
+    for i in range(nSmpl):
+        headEuclid.append (euclidean (prediction[i][head], gtruthHead[i]))
+        tailEuclid.append (euclidean (prediction[i][tail], gtruthTail[i]))
+    headEuclid = np.asarray (headEuclid)
+    tailEuclid = np.asarray (tailEuclid)
+    histData = {'Head Distribution': headEuclid, 'Tail Distribution': tailEuclid}
+    avgHeadEuclid = headEuclid.mean ()
+    avgTailEuclid = tailEuclid.mean ()
+    avgEuclid = np.array ((avgHeadEuclid, avgTailEuclid)).mean ()
+    return {'Head Distance':avgHeadEuclid,
+            'Tail Distance':avgTailEuclid,
+            'Avg Distance':avgEuclid,
+            'Distribution':histData}
