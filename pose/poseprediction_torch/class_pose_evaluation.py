@@ -10,11 +10,8 @@ import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 
 import time
-<<<<<<< HEAD
 import numpy as np
-=======
 import cPickle as pickle
->>>>>>> 2576789b436d24172311bec6cee613c03623dfb8
 
 from dataset import DatasetWrapper
 from model import PoseClassModel
@@ -213,10 +210,8 @@ class Evaluator(object):
               .format(self.phase, term_log, time.time() - epoch_since))
         print()
 
-<<<<<<< HEAD
         return epoch_vars
 
-=======
     def score_classification(self, pred, gtruth):
         # Assert instance here
         predCls = np.array(invert_batchgrouping(pred))
@@ -277,12 +272,10 @@ class Evaluator(object):
             plotPoseVarKLDiv(avgEuclid, ylbl ='Normalized Distance')
         except:
             print("=> ERROR: Results for all 10 datasets are incomplete")
->>>>>>> 2576789b436d24172311bec6cee613c03623dfb8
 
 if __name__ == '__main__':
     evaluator = Evaluator(PoseClassModel)
 
-<<<<<<< HEAD
     """ EXAMPLE FOR ITERATOR"""
     # for dataset_id in range(10):
     #     root = '/data5/ludi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
@@ -295,7 +288,7 @@ if __name__ == '__main__':
     #             pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
     #             loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
     #             """ Do things """
-=======
+
     """ DATASET ITERATOR """
     for dataset_id in range(10):
         print('=> Dataset {}'.format(dataset_id))
@@ -341,8 +334,6 @@ if __name__ == '__main__':
     #     evaluator.compute_posevariabilityDataset ()
     #     PoseVarMetrics[dataset_id] = evaluator.clsMetrics
     #     pickle.dump (PoseVarMetrics, open ('tmp/PoseVarMetrics.p', "wb"))
-
->>>>>>> 2576789b436d24172311bec6cee613c03623dfb8
 
     """ EXAMPLE FOR EVALUATION """
     # accs = []
