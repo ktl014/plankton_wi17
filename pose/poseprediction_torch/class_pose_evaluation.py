@@ -264,6 +264,9 @@ class Evaluator(object):
                                                                                   avgEuclid.min (),
                                                                                   avgEuclid.max (),
                                                                                   np.std (avgEuclid)))
+
+            plotPoseVarKLDiv(avgAccu, ylbl = 'Class Accuracy')
+            plotPoseVarKLDiv(avgEuclid, ylbl ='Normalized Distance')
         except:
             print("=> ERROR: Results for all 10 datasets are incomplete")
 
