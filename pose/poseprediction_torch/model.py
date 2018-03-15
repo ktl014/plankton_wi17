@@ -1,5 +1,5 @@
 import torch.nn as nn
-from torchvision.models import vgg16, resnet50, vgg19_bn
+from torchvision.models import vgg16, resnet50, vgg19_bn, alexnet
 from torchvision.models.resnet import Bottleneck
 import torch.utils.model_zoo as model_zoo
 from utils.constants import *
@@ -251,15 +251,13 @@ class ClassModel (nn.Module):
 
         self.num_class = num_class
 
-        # if model_name == RESNET50:
-        self.features_top, self.features_bottom, self.classifier = self.get_resnet_arch(self.num_class)
+        if model_name == RESNET50:
+            self.features_top, self.features_bottom, self.classifier = self.get_resnet_arch(self.num_class)
+        elif model_name == ALEXNET:
+            self.features_top, self.features_bottom, self.classifier = self.get_alexnet_arch(self.num_class)
+        elif model_name == VGG16:
+            self.features_top, self.features_bottom, self.classifier = self.get_vgg_arch (self.num_class)
 
-        # if model_name == ALEXNET:
-        #     self.features_top, self.features_bottom, self.classifier = self.get_alexnet_arch(self.num_class)
-        # elif model_name == RESNET50:
-        #     self.features_top, self.features_bottom, self.classifier = self.get_resnet_arch(self.num_class)
-        # elif model_name == VGG16:
-        #     self.features_top, self.features_bottom, self.classifier = self.get_vgg_arch(self.num_class)
 
     def forward(self, x):
         x = self.features_top(x)
@@ -286,6 +284,59 @@ class ClassModel (nn.Module):
         features_bottom = nn.Sequential (*(list (resnet50_model.children ())[6:-2]) + [avg_pool])
 
         classifier = nn.Linear (2048, num_class)
+
+        return features_top, features_bottom, classifier
+
+    @staticmethod
+    def get_alexnet_arch(num_class):
+        model_url = 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth'
+
+        alexnet_model = ModifiedAlexNet()
+        alexnet_model.load_state_dict(model_zoo.load_url(model_url))
+        # alexnet_model = alexnet(pretrained=True)
+        features_top = nn.Sequential(*list(alexnet_model.features.children())[:10])
+        features_bottom = nn.Sequential(
+            nn.Sequential(*list(alexnet_model.features.children())[10:]),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+            # nn.Conv2d(256, 4096, kernel_size=1),
+            # nn.AvgPool2d(kernel_size=11)
+            # nn.Conv2d(512, 256, kernel_size=3, padding=1),
+            # nn.MaxPool2d(kernel_size=2, stride=2),
+        )
+        # features_bottom = nn.Sequential(*list(alexnet.features.children())[10:])
+
+        classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
+            # nn.Dropout(),
+            # nn.Linear(4096, 4096),
+            # nn.ReLU(inplace=True),
+            nn.Linear(4096, num_class),
+        )
+
+        return features_top, features_bottom, classifier
+
+    @staticmethod
+    def get_vgg_arch(num_class):
+        vgg_model = vgg19_bn(pretrained=True)
+        features_top = nn.Sequential(*list(vgg_model.features.children())[:36])
+        features_bottom = nn.Sequential(*list(vgg_model.features.children())[36:])
+        # classifier = nn.Sequential(
+        #     nn.Sequential(*list(vgg16_model.classifier.children())[:-1]),
+        #     nn.Linear(4096, num_class)
+        # )
+        classifier = nn.Sequential(
+            nn.Linear(512 * 12 * 12, 512),
+            nn.ReLU(True),
+            nn.Dropout(),
+            # nn.Linear(2048, 2048),
+            # nn.ReLU(True),
+            # nn.Dropout(),
+            nn.Linear(512, num_class),
+        )
 
         return features_top, features_bottom, classifier
 

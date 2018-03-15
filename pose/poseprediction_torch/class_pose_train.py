@@ -17,7 +17,7 @@ import shutil
 import datetime
 
 from dataset import DatasetWrapper
-from model import PoseClassModel
+from model import PoseClassModel, ClassModel
 from transform import *
 from logger import Logger
 from utils.constants import *
@@ -179,7 +179,7 @@ class Trainer(object):
                 if not os.path.isdir(root):
                     os.makedirs(root)
                     print('=> record directory created at {}'.format(root))
-                    return root
+                return root
 
     def to_cuda(self):
         if self.gpu_mode == GpuMode.MULTI:
