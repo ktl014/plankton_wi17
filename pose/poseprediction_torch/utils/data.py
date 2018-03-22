@@ -135,19 +135,36 @@ def get_output_size(model, input_size):
         print('ERROR @ utils.get_output_size(): Invalid type returned from output of model')
         assert False
 
-def group_specimen2class(imgList):
-    specimenIDs = [img.split('/')[0] for img in imgList]
+def group_specimen2class(imgList, LEVEL):
+    specimen_ids = [img.split('/')[0] for img in imgList]
     planktonLabels = plankton_labels()
 
-    specimenSet = {spc: [spc] for spc in set(specimenIDs)}     # Specimen Lvl
-    genus = [planktonLabels[spc][2] for spc in specimenIDs]
-    genusSet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][2] == cls] for cls in set(genus)}   # Genus Lvl
-    family = [planktonLabels[spc][1] for spc in specimenIDs]
-    familySet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][1]==cls] for cls in set(family)}   # Family Lvl
-    order = [planktonLabels[spc][0] for spc in specimenIDs]
-    orderSet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][0]==cls] for cls in set(order)}   # Order Lvl
-    dataSet = {'Dataset': specimenIDs}
-    return {'Species':specimenSet, 'Genus':genusSet, 'Family':familySet, 'Order':orderSet,'Dataset':dataSet}, specimenIDs
+    # specimenSet = {spc: [spc] for spc in set(specimenIDs)}     # Specimen Lvl
+    # genus = [planktonLabels[spc][2] for spc in specimenIDs]
+    # genusSet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][2] == cls] for cls in set(genus)}   # Genus Lvl
+    # family = [planktonLabels[spc][1] for spc in specimenIDs]
+    # familySet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][1]==cls] for cls in set(family)}   # Family Lvl
+    # order = [planktonLabels[spc][0] for spc in specimenIDs]
+    # orderSet = {cls: [spc for spc in specimenIDs if planktonLabels[spc][0]==cls] for cls in set(order)}   # Order Lvl
+    # dataSet = {'Dataset': specimenIDs}
+    if LEVEL.upper() == 'SPECIMEN':
+        specimen_sets = {spc: [spc] for spc in set (specimen_ids)}
+    elif LEVEL.upper() == 'GENUS':
+        genus = [planktonLabels[spc][2] for spc in specimen_ids]
+        specimen_sets = {cls: [spc for spc in specimen_ids if planktonLabels[spc][2] == cls] for cls in
+                         set (genus)}
+    elif LEVEL.upper() == 'FAMILY':
+        family = [planktonLabels[spc][1] for spc in specimen_ids]
+        specimen_sets = {cls: [spc for spc in specimen_ids if planktonLabels[spc][1] == cls] for cls in
+                         set (family)}
+    elif LEVEL.upper() == 'ORDER':
+        family = [planktonLabels[spc][0] for spc in specimen_ids]
+        specimen_sets = {cls: [spc for spc in specimen_ids if planktonLabels[spc][0] == cls] for cls in
+                         set (family)}
+    else:
+        specimen_sets = {'Dataset': specimen_ids}
+    # return {'Species':specimenSet, 'Genus':genusSet, 'Family':familySet, 'Order':orderSet,'Dataset':dataSet}, specimenIDs
+    return specimen_sets, specimen_ids
 
 
 def plankton_labels():
@@ -317,10 +334,13 @@ def get_pred_coordinates(output_coord):
     return pred_coordinates
 
 def invert_batchgrouping(batch):
-    inverted_batch = []
-    for i in range(len(batch)):
-        inverted_batch += [batch[i][j] for j in range(len(batch[i]))]
-    return inverted_batch
+    try:
+        inverted_batch = []
+        for i in range(len(batch)):
+            inverted_batch += [batch[i][j] for j in range(len(batch[i]))]
+        return np.array(inverted_batch)
+    except:
+        return batch
 
 def euclideanDistance(prediction, gtruthHead, gtruthTail):
     headEuclid, tailEuclid = [], []

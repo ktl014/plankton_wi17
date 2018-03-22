@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 import torch
 import torch.nn as nn
@@ -14,11 +14,11 @@ import cPickle as pickle
 import pandas as pd
 
 from dataset import DatasetWrapper
-from model import PoseClassModel
+from model import ClassModel
 from utils.constants import *
 from utils.data import *
-from utils.vis import *
 from logger import Logger
+from utils.vis import *
 
 DEBUG = False
 
@@ -29,8 +29,8 @@ class Evaluator(object):
         self.cross_entropy_loss = nn.CrossEntropyLoss()
         self.phases = [TRAIN, TEST]
         cudnn.benchmark = True
-        self.log_vars = ['loss', 'class_loss', 'pose_loss', 'class_accuracy', 'pose_error']
-        self.running_vars = {var: [] for var in self.log_vars}
+        self.log_vars = ['loss', 'class_loss', 'class_accuracy']
+        self.running_vars = {var:[] for var in self.log_vars}
         self.datasetIDs = [9]
         self.datasetMetric = {id:{} for id in self.datasetIDs}
 
@@ -78,17 +78,14 @@ class Evaluator(object):
         return headXY, tailXY, poseXY
 
     def sort_classes_poses_etc(self):
-        if not os.path.isdir(self.results_dir):
-            print('=> results directory created at {}'.format(self.results_dir))
-            os.makedirs(self.results_dir)
-
         self.level = 'Genus'
-        self.gtruthHead, self.gtruthTail, self.poseXY = self.initialize_posemetrics(phase=TEST)
-        self.specimenSets, self.specimenIDs = group_specimen2class (self.dataset[TEST].dataset.data['images'], self.level)
-        self.classIdx = {}
-        for cls in self.specimenSets:
-            idx = [i for i, spc in enumerate (self.specimenIDs) if spc in self.specimenSets[cls]]
-            self.classIdx[cls] = idx
+        _, _, poseXY = self.initialize_posemetrics(phase=TEST)
+        specimenSets, specimenIDs = group_specimen2class (self.dataset[TEST].dataset.data['images'], self.level)
+        classIdx = {}
+        for cls in specimenSets:
+            idx = [i for i, spc in enumerate (specimenIDs) if spc in specimenSets[cls]]
+            classIdx[cls] = idx
+        return specimenSets, specimenIDs, classIdx, poseXY
 
     def to_cuda(self):
         print('=> transferring model to GPU...  ', end='')
@@ -140,37 +137,32 @@ class Evaluator(object):
         self.model.train(False)
         total = 0
         t1 = time.time()
+
         for i, data in enumerate(self.dataset[TEST].dataloader):
             inputs, target_class, target_map, coordinates = \
                 data['image'], data['class_index'], data['target_map'], data['coordinates']
             inputs, target_map, target_class = \
                 self.to_variable(inputs), self.to_variable(target_map), self.to_variable(target_class)
 
-            outputs_class, outputs_pose = self.model(inputs)
+            outputs_class = self.model(inputs)
             loss_class = self.cross_entropy_loss(outputs_class, target_class)
-            loss_pose = self.mse_loss(outputs_pose, target_map) * self.args.pose_loss_weight
-            loss = loss_class + loss_pose
+            loss = loss_class
 
-            pred_coordinates = get_pred_coordinates(outputs_pose)
             pred_classes = get_pred_classes(outputs_class)
 
-            total += inputs.size(0)
-            eta = (time.time() - t1) / total * (len(self.dataset[TEST]) - total)
+            total += inputs.size (0)
+            eta = (time.time () - t1) / total * (len (self.dataset[TEST]) - total)
 
             print ('=> Predicting {}/{} ({:.0f}%), ETA: {:.0f}s     \r'
                    .format (total, len (self.dataset[TEST]),
-                            100.0 * total / len(self.dataset[TEST]), eta), end='')
+                            100.0 * total / len (self.dataset[TEST]), eta), end='')
 
             yield {
-                'pred_coordinates': pred_coordinates,
                 'pred_classes': pred_classes,
-                'gt_coordinates': coordinates,
                 'gt_classes': target_class,
                 'loss': loss,
-                'loss_pose': loss_pose,
                 'loss_class': loss_class,
                 'outputs_class': outputs_class,
-                'outputs_pose': outputs_pose,
                 'inputs': inputs
             }
 
@@ -226,17 +218,21 @@ class Evaluator(object):
 
     def score_classification(self, pred, gtruth):
         # Assert instance here
+        if not os.path.isdir(self.results_dir):
+            print('=> results directory created at {}'.format(self.results_dir))
+            os.makedirs(self.results_dir)
+
         predCls = invert_batchgrouping(pred)
         gtCls = invert_batchgrouping(gtruth)
+
+        self.save_predictions(predCls, gtCls)
 
         totalAccu = (predCls == gtCls).mean()*100
         print('=> Accuracy: {:0.3f}'.format(totalAccu))
 
         vars = {'class_accuracy': totalAccu,
                 'loss': 0,
-                'class_loss': 0,
-                'pose_loss':0,
-                'pose_error':0}
+                'class_loss': 0}
 
         self.running_vars = {var: self.running_vars[var] + [vars[var]] for var in self.log_vars}
 
@@ -257,53 +253,35 @@ class Evaluator(object):
             class_accuracy.append(cmRate.diagonal()[i])
 
         #TODO Insert histogram of class accuracies / confusion matrix
+        _, specimenIDs, classIdx, poseXY = self.sort_classes_poses_etc()
         cls = [i.split()[0] for i in sorted(self.dataset[TEST].dataset.classes)]
         # showClassificationDistribution(cmRate.diagonal, title='Dataset {} Class Accuracies'.format(self.args.dataset_id))
         plotPoseVarKLDiv(self.results_dir, class_accuracy, self.datasetIDs,
                          ylbl = 'Class Accuracy')
         showConfusionMatrix(self.results_dir, cmRate, classes=cls,
                             title='Confusion Matrix (Dataset {})'.format(self.args.dataset_id))
-        plotPoseOrientation(self.results_dir, predCls, gtCls, self.poseXY,
-                            dict(zip(self.dataset[TEST].dataset.classes, class_accuracy)), self.classIdx, self.specimenIDs)
-
-    def score_poseprediction(self, pred):
-        predCoordinates = np.array(invert_batchgrouping(pred))
-
-        for i,cls in enumerate(self.specimenSets):
-            testIdx = self.classIdx[cls]
-            print(cls, len(predCoordinates[testIdx]), len(self.gtruthTail[testIdx]), len(self.gtruthHead[testIdx]))
-            self.datasetMetric[self.args.dataset_id][cls]['Euclid'] = euclideanDistance(predCoordinates[testIdx], self.gtruthHead[testIdx], self.gtruthTail[testIdx])
-        avgEuclid = np.array ([self.datasetMetric[self.args.dataset_id][cls]['Euclid']['Avg Distance'] for cls in self.datasetMetric[self.args.dataset_id]])
-        print('=> Avg Euclid: {:0.3f}'.format(avgEuclid.mean()))
-
-        #TODO insert histogram of euclid distance per class
+        plotPoseOrientation(self.results_dir, predCls, gtCls, poseXY,
+                            dict(zip(self.dataset[TEST].dataset.classes, class_accuracy)), classIdx, specimenIDs)
 
     def score_entiredataset(self):
-        print('=> Checkpoint saved')
-        pickle.dump (self.datasetMetric, open ('utils/tmp/entireDatasetMetrics.p', "wb"))
-        print('=> Results over 10 randomly sampled test sets')
-        avgAccu, avgEuclid = [], []
+        print('=> Results over {} randomly sampled test sets'.format(len(self.datasetIDs)))
+        classAvgAccu= []
         for i in self.datasetMetric:
             if len(self.datasetMetric[i]) == 0:
                 continue
-            avgAccu += [self.datasetMetric[i][cls]['Accuracy'] for cls in self.datasetMetric[i]]
-            avgEuclid += [self.datasetMetric[i][cls]['Euclid']['Avg Distance'] for cls in self.datasetMetric[i]]
-        datasetAvgAccu = np.array (self.running_vars['class_accuracy'])
-        avgAccu = np.array(avgAccu)
-        avgEuclid = np.array(avgEuclid)
+            classAvgAccu += [self.datasetMetric[i][cls]['Accuracy'] for cls in self.datasetMetric[i]]
+        classAvgAccu = np.array(classAvgAccu)
+        datasetAvgAccu = np.array(self.running_vars['class_accuracy'])
 
-        print ('=> Overall Accuracy [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'.
-               format (datasetAvgAccu.mean (), datasetAvgAccu.min (), datasetAvgAccu.max (), np.std (datasetAvgAccu)))
-        print('=> Class Accuracy [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'
-              .format(avgAccu.mean(), avgAccu.min(), avgAccu.max(), np.std(avgAccu)))
-        print ('=> Class Euclidean [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'.
-               format (avgEuclid.mean (), avgEuclid.min (), avgEuclid.max (), np.std (avgEuclid)))
+        print('=> Overall Accuracy [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'.
+              format(datasetAvgAccu.mean(), datasetAvgAccu.min(), datasetAvgAccu.max(), np.std(datasetAvgAccu) ))
+        print('=> Class Accuracy [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'.
+              format(classAvgAccu.mean(), classAvgAccu.min(), classAvgAccu.max(), np.std(classAvgAccu)))
 
-        plotPoseVarKLDiv(self.results_dir, avgAccu, self.datasetIDs, ylbl = 'Class Accuracy')
-        plotPoseVarKLDiv(self.results_dir, avgEuclid, self.datasetIDs, ylbl ='Normalized Distance')
+        plotPoseVarKLDiv(self.results_dir, classAvgAccu, self.datasetIDs, ylbl = 'Class Accuracy')
 
 if __name__ == '__main__':
-    evaluator = Evaluator(PoseClassModel)
+    evaluator = Evaluator(ClassModel)
 
     if DEBUG:
         LEVEL = 'Genus'  # SPECIMEN GENUS FAMILY ORDER DATASET
@@ -312,64 +290,51 @@ if __name__ == '__main__':
         dataset_id = 9
         EXP_TYPE = 'pose_class'
 
-        root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/records/resnet50/{}/{}/'.format (
-            EXP_TYPE, dataset_id)
+        root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/records/resnet50/class/{}/'.format (
+            dataset_id)
         evaluator.set_root (root)
 
         root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/'
         predCls = pickle.load (open (root + '/tmp/{}/{}/predCls.p'.format (EXP_TYPE, dataset_id), "rb"))
         gtCls = pickle.load (open (root + '/tmp/{}/{}/gtCls.p'.format (EXP_TYPE, dataset_id), "rb"))
-        pred_coordinates = pickle.load (open (root + 'tmp/predCoord.p', "rb"))
-
-        evaluator.sort_classes_poses_etc ()
         evaluator.score_classification (pred=predCls, gtruth=gtCls)
-        evaluator.score_poseprediction (pred=pred_coordinates)
         exit(0)
 
     """ DATASET ITERATOR """
-    dataset_since = time.time()
+    dataset_since = time.time ()
     for dataset_id in evaluator.datasetIDs:
         print('=> Dataset {}'.format(dataset_id))
-        root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/records/resnet50/pose_class/{}/'.format(dataset_id)
+        root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/records/resnet50/class/{}/'.format(dataset_id)
         evaluator.set_root(root)
-        gt_classes, gt_coordinates = [], []
-        pred_classes, pred_coordinates = [], []
+        gt_classes, pred_classes = [], []
 
         """ UNCOMMENT & TAB SECTION BELOW TO EVALUATE EACH CHECKPOINT"""
         # for i, checkpoint in enumerate(evaluator.get_checkpoints()):
-        default_checkpoint = next(evaluator.get_checkpoints(), 0)
-        for data in evaluator.generator(default_checkpoint):
+        defaultCheckPoint = next(evaluator.get_checkpoints(), 0)
+        for data in evaluator.generator(defaultCheckPoint):
             inputs = data['inputs']
-            outputs_class, outputs_pose = data['outputs_class'], data['outputs_pose']
-            # gt_classes, gt_coordinates = data['gt_classes'], data['gt_coordinates']
-            # pred_classes, pred_coordinates = data['pred_classes'], data['pred_coordinates']
-            loss, loss_class, loss_pose = data['loss'], data['loss_class'], data['loss_pose']
+            outputs_class = data['outputs_class']
+            loss, loss_class = data['loss'], data['loss_class']
 
             gt_classes.append(data['gt_classes'].data)
-            gt_coordinates.append(data['gt_coordinates'])
             pred_classes.append(data['pred_classes'])
-            pred_coordinates.append(data['pred_coordinates'])
 
         if DEBUG:
             root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/'
             gt_classes = pickle.load(open(root + 'tmp/gtCls.p', "rb"))
             gt_classes = [gt_classes[i].data for i, idx in enumerate(gt_classes)]
             pred_classes = pickle.load(open(root + 'tmp/predCls.p', "rb"))
-            pred_coordinates = pickle.load(open(root + 'tmp/predCoord.p', "rb"))
 
         print()
-        print('=> Dataset {} Evaluation Results'.format(dataset_id))
-        evaluator.sort_classes_poses_etc()
-        #evaluator.save_predictions(pred=pred_classes, gtruth=gt_classes)
+        print('=> Evaluation Results')
         evaluator.score_classification(pred=pred_classes, gtruth=gt_classes)
-        evaluator.score_poseprediction(pred = pred_coordinates)
-        #evaluator.compute_posevariabilityDataset()
         print ()
         print ('Time Elapsed: {:.0f}s'
                .format (time.time () - dataset_since))
         print ()
-
+        #evaluator.compute_posevariabilityDataset()
     evaluator.score_entiredataset()
+
 
     """ TEST: Compute Pose Variability """
     # PoseVarMetrics = {}

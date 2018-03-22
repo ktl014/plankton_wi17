@@ -1,10 +1,13 @@
 import cv2
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from torchvision import utils
 import torch
 from scipy.spatial.distance import euclidean
 import cPickle as pickle
+import itertools
+from utils.data import specimen_normalization
 
 def show_arrow(image, coordinates, cls):
     if isinstance(image, (np.ndarray, list)):
@@ -112,13 +115,24 @@ def showHeadTailDistribution(clsHeadTailEuclid, fullDataset=False):
                            bbox=dict (facecolor='red', alpha=0.5),
                            horizontalalignment='center', verticalalignment='center', transform=axarr[i + 2].transAxes)
 
-def plotPoseVarKLDiv(metric, ylbl=None):
+def showClassificationDistribution(data):
+    fig, axarr = plt.subplots (1, 1, figsize=(15, 4))
+    clsMin, clsMean, clsMax, clsStd = data.min(), data.mean(), data.max(), np.std(data)
+    axarr.hist(clsHeadTailEuclid[part], numBins, range=[0.0, 1.0])
+    axarr.set_title(part)
+    axarr.text (0.65, 0.85,
+                       'Minimum: {:0.3f}\nMean: {:0.3f}\nMax: {:0.3f}\nStd: {:0.3f}'.format (clsMin, clsMean,
+                                                                                             clsMax, clsStd),
+                       bbox=dict (facecolor='red', alpha=0.5),
+                       horizontalalignment='center', verticalalignment='center', transform=axarr.transAxes)
+
+def plotPoseVarKLDiv(filepath, metric, datasets, ylbl=None):
 
     """ TEMPORARY BEGIN """
     #TODO Incorporate calculating pose variability & kl divergence into dataset creation
-    poseVar, kldiv = [], []
-    PoseVarMetrics = pickle.load(open('backUpData/PoseVarMetrics.p', 'rb'))
-    for i in PoseVarMetrics:
+    poseVar, kldiv, label = [], [], []
+    PoseVarMetrics = pickle.load(open('tmp/PoseVarMetrics.p', 'rb'))
+    for i in datasets:
         poseVar += [PoseVarMetrics[i][cls]['PoseVar'] for cls in PoseVarMetrics[i]]
         kldiv += [PoseVarMetrics[i][cls]['KLDiv'] for cls in PoseVarMetrics[i]]
         label += [dummyLbl for dummyLbl, cls in enumerate(PoseVarMetrics[0])]
@@ -143,4 +157,69 @@ def plotPoseVarKLDiv(metric, ylbl=None):
     cb1 = plt.colorbar(scat1, spacing='proportional',ticks=bounds)
     cb1.set_label('Classes')
     cb1.set_ticklabels(classes)
-    plt.show()
+    plt.savefig(filepath + '/posevar.png')
+
+def showConfusionMatrix(filepath, cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+    """
+        This function prints and plots the confusion matrix.
+        Normalization can be applied by setting `normalize=True`.
+        """
+    if normalize:
+        cm = cm.astype ('float') / cm.sum (axis=1)[:, np.newaxis]
+
+    plt.figure(figsize=(20,20))
+    plt.imshow (cm, interpolation='nearest', cmap=cmap)
+    plt.title (title)
+    plt.colorbar ()
+    tick_marks = np.arange (len (classes))
+    plt.xticks (tick_marks, classes, rotation=45)
+    plt.yticks (tick_marks, classes)
+
+    fmt = '.2f'
+    thresh = cm.max () / 2.
+    for i, j in itertools.product (range (cm.shape[0]), range (cm.shape[1])):
+        plt.text (j, i, format (cm[i, j], fmt),
+                  horizontalalignment="center",
+                  color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout ()
+    plt.ylabel ('True label')
+    plt.xlabel ('Predicted label')
+    plt.savefig(filepath + '/cmatrix.png')
+
+def plotPoseOrientation(filepath, predictions, gtruth, poseXY, classAccuracy, classIdx, specimenIDs):
+    numCols = 8
+    classes = classAccuracy.keys()
+    order = np.argsort([classAccuracy[cls] for cls in classes])
+    classes = [classes[i] for i in order]
+
+    numRows = int(max(len(classes)/numCols+1,2))
+    numPlots = int(np.ceil(numRows / 5.))
+    for p in range(numPlots):
+        fig, axarr = plt.subplots(min(numRows, 5), numCols, figsize=(20,20))
+        for i in range(len(axarr)):
+            for j in range(len(axarr[0])):
+                axarr[i,j].set_axis_off()
+        for iAx, cls in enumerate(classes[p*5*numCols:(p+1)*5*numCols]):
+            print ' ', cls, classAccuracy[cls], len(classIdx[cls])
+            axarr[iAx / numCols, iAx % numCols].set_title('{:0.3f} ({})'.format(classAccuracy[cls], cls.split()[0]))
+            axarr[iAx / numCols, iAx % numCols].plot([0,0], [-1,1], 'r')
+            axarr[iAx / numCols, iAx % numCols].plot([-1, 1], [0,0], 'r')
+            axarr[iAx / numCols, iAx % numCols].plot(np.cos(np.arange(0, 2.1*np.pi, 0.1)), np.sin(np.arange(0, 2.1*np.pi, 0.1)), 'k')
+
+            idx = classIdx[cls]
+            poseNorm = specimen_normalization(poseXY[idx], [specimenIDs[i] for i in idx])
+
+            misClassifiedPoseNorm = np.array([poseNorm[i] for i, j in enumerate(idx) if gtruth[j] != predictions[j]])
+            correctClassifiedPoseNorm = np.array([poseNorm[i] for i, j in enumerate(idx) if gtruth[j] == predictions[j]])
+
+            if not misClassifiedPoseNorm.shape[0] == 0:
+                axarr[iAx / numCols, iAx % numCols].plot (misClassifiedPoseNorm[:, 0],
+                                                              misClassifiedPoseNorm[:, 1], '.r')
+            if not correctClassifiedPoseNorm.shape[0] == 0:
+                axarr[iAx / numCols, iAx % numCols].plot(correctClassifiedPoseNorm[:, 0], correctClassifiedPoseNorm[:, 1], '.g')
+
+            axarr[iAx / numCols, iAx % numCols].set_xlim(-1.1, 1.1)
+            axarr[iAx / numCols, iAx % numCols].set_ylim(-1.1, 1.1)
+
+    plt.savefig(filepath + '/orientationspace.png')
