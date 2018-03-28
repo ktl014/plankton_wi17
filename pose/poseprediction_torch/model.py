@@ -1,9 +1,159 @@
+import torch
 import torch.nn as nn
 from torchvision.models import vgg16, resnet50, vgg19_bn, alexnet
 from torchvision.models.resnet import Bottleneck
 import torch.utils.model_zoo as model_zoo
 from utils.constants import *
 
+class PoseClass_L2Model(nn.Module):
+    __names__ = {ALEXNET, VGG16, RESNET50}
+
+    def __init__(self, model_name, num_class):
+        super(PoseClass_L2Model, self).__init__()
+
+        assert model_name in PoseClass_L2Model.__names__
+
+        self.num_class = num_class
+
+        if model_name == ALEXNET:
+            self.features_top, self.features_bottom, self.classifier, self.cpm, self.features_bottom2, self.classifier2, self.cpm2 = self.get_alexnet_arch (
+                self.num_class)
+        elif model_name == RESNET50:
+            self.features_top, self.features_bottom, self.classifier, self.cpm, self.features_bottom2, self.classifier2, self.cpm2 = self.get_resnet_arch (self.num_class)
+        elif model_name == VGG16:
+            self.features_top, self.features_bottom, self.classifier, self.cpm = self.get_vgg_arch (self.num_class)
+
+    def forward(self, x):
+        x1 = self.features_top (x)
+
+        x_pose1 = self.cpm (x1)
+
+        x_class1 = self.features_bottom (x1)
+        x_class1 = x_class1.view (x1.size (0), -1)
+        x_class1 = self.classifier (x_class1)
+        x_class1.unsqueeze_(-1)
+        x_class1 = x_class1.expand (-1, -1, 46)
+        x_class1.unsqueeze_(-1)
+        x_class1 = x_class1.expand (-1, -1, -1, 46)
+
+
+        x2 = torch.cat ((x1, x_pose1, x_class1), 1)
+
+        x_pose2 = self.cpm2 (x2)
+
+        x_class2 = self.features_bottom2 (x2)
+        x_class2 = x_class2.view (x2.size (0), -1)
+        x_class2 = self.classifier2 (x_class2)
+
+        return x_class2, x_pose2
+
+    @staticmethod
+    def get_alexnet_arch(num_class):
+        model_url = 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth'
+
+        alexnet = ModifiedAlexNet ()
+        alexnet.load_state_dict (model_zoo.load_url (model_url))
+        features_top = nn.Sequential (*list (alexnet.features.children ())[:10])
+        features_bottom = nn.Sequential (
+            nn.Sequential (*list (alexnet.features.children ())[10:]),
+            nn.Conv2d (256, 256, kernel_size=3, stride=2, padding=1),
+            nn.ReLU (inplace=True),
+            nn.MaxPool2d (kernel_size=3, stride=2, padding=1),
+        )
+
+        classifier = nn.Sequential (
+            nn.Dropout (),
+            nn.Linear (256 * 6 * 6, 4096),
+            nn.ReLU (inplace=True),
+            nn.Dropout (),
+            nn.Linear (4096, 512)
+        )
+
+        cpm = nn.Sequential (
+            nn.Conv2d (256, 256, kernel_size=3, padding=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (256, 128, kernel_size=3, padding=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (128, 128, kernel_size=3, padding=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (128, 512, kernel_size=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (512, 3, kernel_size=1)
+        )
+
+        features_bottom2 = nn.Sequential (
+            nn.Conv2d (771, 256, kernel_size=3, stride=2, padding=1),
+            nn.ReLU (inplace=True),
+            nn.MaxPool2d (kernel_size=3, stride=2, padding=1),
+            nn.Conv2d (256, 256, kernel_size=3, stride=2, padding=1),
+            nn.ReLU (inplace=True),
+            nn.MaxPool2d (kernel_size=3, stride=2, padding=1)
+        )
+
+        classifier2 = nn.Sequential (
+            nn.Dropout (),
+            nn.Linear (2304, 4096),
+            nn.ReLU (inplace=True),
+            # nn.Dropout(),
+            # nn.Linear(4096, 4096),
+            # nn.ReLU(inplace=True),
+            # nn.Linear(4096, num_class),
+            nn.Dropout (),
+            nn.Linear (4096, num_class),
+        )
+
+        cpm2 = nn.Sequential (
+            nn.Conv2d (771, 256, kernel_size=3, padding=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (256, 128, kernel_size=3, padding=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (128, 128, kernel_size=3, padding=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (128, 512, kernel_size=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (512, 3, kernel_size=1)
+        )
+        return features_top, features_bottom, classifier, cpm, features_bottom2, classifier2, cpm2
+
+    def get_resnet_arch(num_class):
+        resnet50_model = resnet50 (pretrained=True)
+        features_top = nn.Sequential (*list (resnet50_model.children ())[:6])
+
+        avg_pool = nn.AvgPool2d (12, stride=1)
+        features_bottom = nn.Sequential (*(list (resnet50_model.children ())[6:-2]) + [avg_pool])
+
+        classifier = nn.Linear (2048, 512)
+
+        downsample = nn.Sequential (
+            nn.Conv2d (512, 512, kernel_size=1, stride=1, bias=False),
+            nn.BatchNorm2d (512),
+        )
+        cpm = nn.Sequential (
+            Bottleneck (512, 128, 1, downsample),
+            Bottleneck (512, 128),
+            Bottleneck (512, 128),
+            Bottleneck (512, 128),
+            nn.Conv2d (512, 512, kernel_size=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (512, 3, kernel_size=1)
+        )
+
+        l2_class = nn.Sequential (Bottleneck (1027, 256))
+        features_bottom2 = nn.Sequential (*([l2_class] + list (resnet.children ())[7:-2]) + [avg_pool])
+
+        classifier2 = nn.Linear (2048, num_class)
+
+        cpm2 = nn.Sequential (
+            Bottleneck (1027, 128, 1, downsample),
+            Bottleneck (512, 128),
+            Bottleneck (512, 128),
+            Bottleneck (512, 128),
+            nn.Conv2d (512, 512, kernel_size=1),
+            nn.ReLU (inplace=True),
+            nn.Conv2d (512, 3, kernel_size=1)
+        )
+
+        return features_top, features_bottom, classifier, cpm, features_bottom2, classifier2, cpm2
 
 class PoseClassModel(nn.Module):
     __names__ = {ALEXNET, VGG16, RESNET50}
@@ -74,6 +224,8 @@ class PoseClassModel(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(512, 3, kernel_size=1)
         )
+
+
 
         return features_top, features_bottom, classifier, cpm
 
@@ -291,13 +443,12 @@ class ClassModel (nn.Module):
     def get_alexnet_arch(num_class):
         model_url = 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth'
 
-        alexnet_model = ModifiedAlexNet()
-        alexnet_model.load_state_dict(model_zoo.load_url(model_url))
-        # alexnet_model = alexnet(pretrained=True)
-        features_top = nn.Sequential(*list(alexnet_model.features.children())[:10])
+        alexnet = ModifiedAlexNet()
+        alexnet.load_state_dict(model_zoo.load_url(model_url))
+        features_top = nn.Sequential(*list(alexnet.features.children())[:10])
         features_bottom = nn.Sequential(
-            nn.Sequential(*list(alexnet_model.features.children())[10:]),
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
+            nn.Sequential(*list(alexnet.features.children())[10:]),
+            nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
             # nn.Conv2d(256, 4096, kernel_size=1),
