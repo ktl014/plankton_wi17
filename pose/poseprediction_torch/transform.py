@@ -3,6 +3,30 @@ import torch
 import numpy as np
 
 
+class RandomRotation (object):
+    """ Rotate the image by angle """
+
+    def __init__(self, degrees):
+        self.degrees = (-degrees, degrees)
+
+    def __call__(self, sample):
+        angle = np.random.uniform (self.degrees[0], self.degrees[1])
+        resample = False
+        expand = False
+        center = None
+
+        # Rotate here
+        image, coordinates, target_map = sample['image'], sample['coordinates'], sample['target_map']
+
+        (rows, cols, _) = image.shape
+        M = cv2.getRotationMatrix2D ((cols / 2, rows / 2), np.rad2deg (angle), 1)
+        image = cv2.warpAffine (image, M, (cols, rows))
+
+        copy = {key: sample[key] for key in sample}
+        copy['image'], copy['coordinates'], copy['target_map'] = image, coordinates, target_map
+
+        return copy
+
 class Rescale(object):
     def __init__(self, output_size):
         assert isinstance(output_size, (int, tuple))
@@ -121,9 +145,10 @@ class EmptyTransform(object):
 
 if __name__ == '__main__':
     from dataset import PlanktonDataset
-    from utils.vis import show_arrow
+    from utils.vis import show_arrow, show_arrow_batch, show_image_batch
     import matplotlib.pyplot as plt
     from torchvision import transforms
+    from torch.utils.data import DataLoader
 
 
     def test(sample, tsfms):
@@ -141,8 +166,8 @@ if __name__ == '__main__':
             ax.set_title(type(tsfm).__name__)
 
 
-    img_dir = '../images'
-    csv_filename = 'data/Updated_Batch_3084800_batch_results.csv'
+    img_dir = '/data5/Plankton_wi18/rawcolor_db2/images/'
+    csv_filename = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/data/4/data_train_0.csv'
 
     plankton_dataset = PlanktonDataset(csv_file=csv_filename,
                                        img_dir=img_dir)
@@ -152,6 +177,34 @@ if __name__ == '__main__':
     normalize = Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     composed = transforms.Compose([hflip, vflip, Rescale((224, 224))])
 
-    plt.figure()
-    test(plankton_dataset[2], [scale, hflip, vflip, composed])
-    plt.show()
+    # plt.figure()
+    # test(plankton_dataset[2], [scale, hflip, vflip, composed])
+    # plt.show()
+
+    def test_2(dataloader):
+        for i_batch, sample_batched in enumerate(dataloader):
+            if i_batch == 3:
+                plt.figure()
+                show_arrow_batch(sample_batched)
+                plt.figure()
+                show_image_batch(sample_batched['target_map'])
+                plt.axis('off')
+                plt.ioff()
+                plt.show()
+                break
+
+    transformed_dataset = PlanktonDataset(csv_file=csv_filename,
+                                          img_dir=img_dir,
+                                          transform=transforms.Compose([
+                                              Rescale((224,224)),
+                                              RandomHorizontalFlip(),
+                                              RandomVerticalFlip(),
+                                              ToTensor()
+                                          ]))
+    dataloader = DataLoader(transformed_dataset, batch_size=4, shuffle=True, num_workers=4)
+    test_2(dataloader)
+
+
+
+
+
