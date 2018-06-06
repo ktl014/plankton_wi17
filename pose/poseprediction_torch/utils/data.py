@@ -359,3 +359,6 @@ def euclideanDistance(prediction, gtruthHead, gtruthTail):
             'Tail Distance':avgTailEuclid,
             'Avg Distance':avgEuclid,
             'Distribution':histData}
+
+def randomAngle(a,b):
+    return np.random.rand((1))*(b - a) + a

@@ -61,7 +61,80 @@ class RandomHorizontalFlip(object):
 
         return copy
 
+class RandomRotation():
+    def __init__(self,angleFx,params):
+        self.angleFx = angleFx
+        self.params = params
+        
+    def __call__(self, sample):
+        image, coordinates, target_map = sample['image'], sample['coordinates'], sample['target_map']
+        x_axis = np.array([1,0])
+        
+        h = image.shape[0]
+        w = image.shape[1]
+    
+        head = np.array((int(coordinates[0] * w), int(coordinates[1] * h)))
+        tail = np.array((int(coordinates[2] * w), int(coordinates[3] * h)))
+        
+        pose = np.array([head[0] - tail[0],head[1] - tail[1]])
+        dot = np.dot(x_axis,pose)
+        norm = np.linalg.norm(pose,axis=0)
+        
+        copy = {key: sample[key] for key in sample}
+        if norm == 0:
+            image = image.copy()
+            coordinates = coordinates.copy()
+            target_map = target_map.copy()
+            
+            copy['image'], copy['coordinates'], copy['target_map'] = image, coordinates, target_map
+        else:
+            angle = np.arccos(np.divide(dot,norm))
 
+            if pose[1] < 0:
+                angle = 2*np.pi - angle
+
+            desired_ang = self.angleFx(*self.params)
+            rotation_ang = desired_ang - angle
+            center = np.vstack(((head[0] + tail[0])/2,(head[1] + tail[1])/2))
+
+            M = cv2.getRotationMatrix2D((center[0],center[1]),np.rad2deg(-rotation_ang),1)
+            bounds = np.array([[0,0,1],[w,0,1],[0,h,1],[w,h,1]]).T
+            bounds_rot = M.dot(bounds)
+            min_x = min(bounds_rot[0,:])
+            max_x = max(bounds_rot[0,:])
+            min_y = min(bounds_rot[1,:])
+            max_y = max(bounds_rot[1,:])    
+
+            h_new = max_y - min_y
+            w_new = max_x - min_x
+            tx = np.abs(np.min([min_x,0]))
+            ty = np.abs(np.min([min_y,0]))
+
+            tx -= np.abs(w_new - np.max([max_x,w_new]))
+            ty -= np.abs(h_new - np.max([max_y,h_new]))
+
+            bounds_rot = bounds_rot + [[tx],[ty]]
+            cosM = np.abs(M[0, 0])
+            sinM = np.abs(M[0, 1])
+
+            M[0, 2] += tx
+            M[1, 2] += ty
+
+            dst = cv2.warpAffine(image,M,(int(np.ceil(w_new)),int(np.ceil(h_new))))
+
+            head_rot = M.dot(np.vstack((head.reshape((2,1)),[1])))
+            tail_rot = M.dot(np.vstack((tail.reshape((2,1)),[1])))
+            corrdinates_rot = [head_rot[0][0]/float(dst.shape[1]),head_rot[1][0]/float(dst.shape[0]),tail_rot[0][0]/float(dst.shape[1]),tail_rot[1][0]/float(dst.shape[0])]
+
+            image = dst
+            coordinates = corrdinates_rot
+            target_map = get_belief_map(coordinates, target_map.shape , 1., 3.)
+
+            
+            copy['image'], copy['coordinates'], copy['target_map'] = image, coordinates, target_map
+
+        return copy
+    
 class RandomVerticalFlip(object):
     def __call__(self, sample, flip_prob=0.5):
         image, coordinates, target_map = sample['image'], sample['coordinates'], sample['target_map']

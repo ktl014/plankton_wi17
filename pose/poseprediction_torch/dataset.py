@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-from utils.data import get_belief_map, to_one_hot
+from utils.data import get_belief_map, to_one_hot, randomAngle
 from utils.constants import *
 from transform import *
 import os
@@ -76,15 +76,18 @@ class DatasetWrapper(object):
         self.normalizer = Normalize([0.5, 0.5, 0.5], [1, 1, 1])  # ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
         self.data_transform = {
-            TRAIN: transforms.Compose([Rescale(self.input_size),
+            TRAIN: transforms.Compose([RandomRotation(randomAngle,[0,2*np.pi]),
+                                       Rescale(self.input_size),
                                        RandomHorizontalFlip(),
                                        RandomVerticalFlip(),
                                        ToTensor(),
                                        self.normalizer]),
-            VALID: transforms.Compose([Rescale(self.input_size),
+            VALID: transforms.Compose([RandomRotation(randomAngle,[0,2*np.pi]),
+                                       Rescale(self.input_size),
                                        ToTensor(),
                                        self.normalizer]),
-            TEST:  transforms.Compose([Rescale(self.input_size),
+            TEST:  transforms.Compose([RandomRotation(randomAngle,[0,2*np.pi]),
+                                       Rescale(self.input_size),
                                        ToTensor(),
                                        self.normalizer])
         }
@@ -117,7 +120,7 @@ class DatasetWrapper(object):
 
 
 if __name__ == '__main__':
-    from transform import Rescale, RandomHorizontalFlip, RandomVerticalFlip, ToTensor
+    from transform import Rescale, RandomHorizontalFlip, RandomVerticalFlip, ToTensor, RandomRotation
     from utils.vis import show_arrow_batch
     from torch.utils.data import DataLoader
     from torchvision import transforms
