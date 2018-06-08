@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import torch
 import torch.nn as nn
@@ -31,11 +31,11 @@ class Evaluator(object):
         cudnn.benchmark = True
         self.log_vars = ['loss', 'class_loss', 'class_accuracy']
         self.running_vars = {var:[] for var in self.log_vars}
-        self.datasetIDs = [9]
+        self.datasetIDs = [0]
         self.datasetMetric = {id:{} for id in self.datasetIDs}
 
         # preload
-        self.model_name, self.num_class = RESNET50, 19
+        self.model_name, self.num_class = RESNET50, 13
         print('=> loading model...  ', end='')
         self.model = self.model_class(model_name=self.model_name, num_class=self.num_class)
         print('done')
@@ -47,7 +47,7 @@ class Evaluator(object):
         :return: no return
         """
         self.args = Logger.read_meta(os.path.join(root, 'meta.txt'))
-        csv_filename = os.path.join(self.args.data, 'pose_class/data_{}_%d.csv'% self.args.dataset_id)
+        csv_filename = os.path.join(self.args.data, 'data_{}_%d.csv'% self.args.dataset_id)
         num_class = DatasetWrapper.get_num_class(csv_filename.format(TEST))
 
         if self.args.model != self.model_name or num_class != self.num_class:
@@ -256,8 +256,8 @@ class Evaluator(object):
         _, specimenIDs, classIdx, poseXY = self.sort_classes_poses_etc()
         cls = [i.split()[0] for i in sorted(self.dataset[TEST].dataset.classes)]
         # showClassificationDistribution(cmRate.diagonal, title='Dataset {} Class Accuracies'.format(self.args.dataset_id))
-        plotPoseVarKLDiv(self.results_dir, class_accuracy, self.datasetIDs,
-                         ylbl = 'Class Accuracy')
+        #plotPoseVarKLDiv(self.results_dir, class_accuracy, self.datasetIDs,
+         #                ylbl = 'Class Accuracy')
         showConfusionMatrix(self.results_dir, cmRate, classes=cls,
                             title='Confusion Matrix (Dataset {})'.format(self.args.dataset_id))
         plotPoseOrientation(self.results_dir, predCls, gtCls, poseXY,
@@ -304,7 +304,7 @@ if __name__ == '__main__':
     dataset_since = time.time ()
     for dataset_id in evaluator.datasetIDs:
         print('=> Dataset {}'.format(dataset_id))
-        root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/records/resnet50/class/{}/'.format(dataset_id)
+        root = '/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/'.format(dataset_id)
         evaluator.set_root(root)
         gt_classes, pred_classes = [], []
 
