@@ -21,7 +21,7 @@ class PlanktonDataset(Dataset):
         self.amp = amp
         self.std = std
 
-        self.level = GENUS
+        self.level = FAMILY
         self.classes = sorted(self.data[self.level].unique())
         self.class_to_index = {cls: i for i, cls in enumerate(self.classes)}
         self.num_class = len(self.classes)

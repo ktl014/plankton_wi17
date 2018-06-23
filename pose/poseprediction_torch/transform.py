@@ -1,6 +1,7 @@
 import cv2
 import torch
 import numpy as np
+from utils.data import get_belief_map
 
 
 class Rescale(object):
@@ -124,11 +125,11 @@ class RandomRotation():
 
             head_rot = M.dot(np.vstack((head.reshape((2,1)),[1])))
             tail_rot = M.dot(np.vstack((tail.reshape((2,1)),[1])))
-            corrdinates_rot = [head_rot[0][0]/float(dst.shape[1]),head_rot[1][0]/float(dst.shape[0]),tail_rot[0][0]/float(dst.shape[1]),tail_rot[1][0]/float(dst.shape[0])]
+            corrdinates_rot = np.array([head_rot[0][0]/float(dst.shape[1]),head_rot[1][0]/float(dst.shape[0]),tail_rot[0][0]/float(dst.shape[1]),tail_rot[1][0]/float(dst.shape[0])])
 
             image = dst
             coordinates = corrdinates_rot
-            target_map = get_belief_map(coordinates, target_map.shape , 1., 3.)
+            target_map = get_belief_map(coordinates, target_map.shape[1:] , 1., 3.)
 
             
             copy['image'], copy['coordinates'], copy['target_map'] = image, coordinates, target_map
