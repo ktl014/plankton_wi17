@@ -362,3 +362,9 @@ def euclideanDistance(prediction, gtruthHead, gtruthTail):
 
 def randomAngle(a,b):
     return np.random.rand((1))*(b - a) + a
+
+def randomNormalAngle(scale):
+    angles = np.random.normal(scale=scale,size=1)
+    angles[angles < -np.pi] = angles[angles < -np.pi] + 2*np.pi
+    angles[angles > np.pi] = angles[angles > np.pi] - 2*np.pi
+    return angles
