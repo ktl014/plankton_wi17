@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-from utils.data import get_belief_map, to_one_hot, randomAngle
+from utils.data import get_belief_map, to_one_hot, randomAngle, randomNormalAngle
 from utils.constants import *
 from transform import *
 import os
