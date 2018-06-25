@@ -76,7 +76,7 @@ class DatasetWrapper(object):
         self.normalizer = Normalize([0.5, 0.5, 0.5], [1, 1, 1])  # ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
         self.data_transform = {
-            TRAIN: transforms.Compose([RandomRotation(randomNormalAngle,[1.0]),
+            TRAIN: transforms.Compose([RandomRotation(randomAngle,[0,2*np.pi]),
                                        Rescale(self.input_size),
                                        RandomHorizontalFlip(),
                                        RandomVerticalFlip(),
