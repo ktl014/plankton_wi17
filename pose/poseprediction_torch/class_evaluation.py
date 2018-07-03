@@ -31,7 +31,7 @@ class Evaluator(object):
         cudnn.benchmark = True
         self.log_vars = ['loss', 'class_loss', 'class_accuracy']
         self.running_vars = {var:[] for var in self.log_vars}
-        self.datasetIDs = [0]
+        self.datasetIDs = [0,1,2,3,4,5,6,7,8,9]
         self.datasetMetric = {id:{} for id in self.datasetIDs}
 
         # preload
@@ -118,7 +118,8 @@ class Evaluator(object):
         """
         checkpoint_dir = os.path.join(self.root, 'checkpoints')
         checkpoints = os.listdir(checkpoint_dir)
-        checkpoints.remove('checkpoint.pth.tar')
+        if 'checkpoint.pth.tar' in checkpoints:
+            checkpoints.remove('checkpoint.pth.tar')
         checkpoints = sorted(checkpoints, key=lambda fn: int(fn[11:].split('.')[0]), reverse=True)
         for checkpoint in checkpoints:
             yield checkpoint
@@ -260,8 +261,8 @@ class Evaluator(object):
          #                ylbl = 'Class Accuracy')
         showConfusionMatrix(self.results_dir, cmRate, classes=cls,
                             title='Confusion Matrix (Dataset {})'.format(self.args.dataset_id))
-        plotPoseOrientation(self.results_dir, predCls, gtCls, poseXY,
-                            dict(zip(self.dataset[TEST].dataset.classes, class_accuracy)), classIdx, specimenIDs)
+        #plotPoseOrientation(self.results_dir, predCls, gtCls, poseXY,
+        #                    dict(zip(self.dataset[TEST].dataset.classes, class_accuracy)), classIdx, specimenIDs)
 
     def score_entiredataset(self):
         print('=> Results over {} randomly sampled test sets'.format(len(self.datasetIDs)))
@@ -278,7 +279,7 @@ class Evaluator(object):
         print('=> Class Accuracy [Avg:{:0.3f}, Min:{:0.3f}, Max:{:0.3f}, Std:{:0.3f}]'.
               format(classAvgAccu.mean(), classAvgAccu.min(), classAvgAccu.max(), np.std(classAvgAccu)))
 
-        plotPoseVarKLDiv(self.results_dir, classAvgAccu, self.datasetIDs, ylbl = 'Class Accuracy')
+        #plotPoseVarKLDiv(self.results_dir, classAvgAccu, self.datasetIDs, ylbl = 'Class Accuracy')
 
 if __name__ == '__main__':
     evaluator = Evaluator(ClassModel)
