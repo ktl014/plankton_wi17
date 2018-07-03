@@ -228,8 +228,8 @@ class Trainer(object):
 
                     class_acc = eval_class_acc(outputs_class, target_class)
 
-                    vars = {'loss': loss.data[0],
-                            'class_loss': loss_class.data[0],
+                    vars = {'loss': loss.data.item(),
+                            'class_loss': loss_class.data.item(),
                             'class_accuracy': class_acc}
 
                     running_vars = {var: running_vars[var] + vars[var] * inputs.size(0) for var in self.log_vars}
