@@ -2,7 +2,6 @@ from __future__ import print_function, division
 
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
 import torch.nn as nn
 from torch.nn import init
@@ -40,8 +39,8 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--model', '-m', metavar='MODEL', default=RESNET50, choices=MODELS,
                     help='pretrained model: ' + ' | '.join(MODELS) + ' (default: {})'.format(RESNET50))
-# parser.add_argument('-g', '--gpu', default=1, type=int, metavar='N',
-#                     help='GPU to use')
+parser.add_argument('-g', '--gpu', required=True, type=int, metavar='N',
+                     help='GPU to use')
 parser.add_argument('--epochs', default=31, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
@@ -73,7 +72,9 @@ phases = [TRAIN, TEST]
 def main():
     global args
     args = parser.parse_args()
-
+    
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+    
     csv_filename = os.path.join(args.data, 'data_{}_%d.csv' % args.dataset_id)
 
     print('=> loading model...')

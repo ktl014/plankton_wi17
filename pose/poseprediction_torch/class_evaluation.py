@@ -2,7 +2,6 @@ from __future__ import print_function, division
 
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import torch
 import torch.nn as nn
@@ -12,6 +11,7 @@ from torch.autograd import Variable
 import time
 import cPickle as pickle
 import pandas as pd
+import argparse
 
 from dataset import DatasetWrapper
 from model import ClassModel
@@ -21,6 +21,10 @@ from logger import Logger
 from utils.vis import *
 
 DEBUG = False
+
+parser = argparse.ArgumentParser(description='PyTorch CPM Evaluation')
+parser.add_argument('-g', '--gpu', required=True, type=int, metavar='N',
+                     help='GPU to use')
 
 class Evaluator(object):
     def __init__(self, model_class):
@@ -282,6 +286,11 @@ class Evaluator(object):
         #plotPoseVarKLDiv(self.results_dir, classAvgAccu, self.datasetIDs, ylbl = 'Class Accuracy')
 
 if __name__ == '__main__':
+    global args
+    args = parser.parse_args()
+    
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
+    
     evaluator = Evaluator(ClassModel)
 
     if DEBUG:
