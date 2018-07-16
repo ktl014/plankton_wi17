@@ -17,6 +17,7 @@ import glob
 from scipy.spatial.distance import euclidean
 import argparse
 
+from dataset import DatasetWrapper
 from utils.vis import *
 from utils.data import *
 from model import PoseModel
@@ -30,10 +31,41 @@ model_name = RESNET50
 parser = argparse.ArgumentParser(description='PyTorch CPM Evaluation')
 parser.add_argument('-g', '--gpu', required=True, type=int, metavar='N',
                      help='GPU to use')
+parser.add_argument('-d', '--dataset-id', default=0, type=int, metavar='N',
+                    help='dataset id to use')
+parser.add_argument('--root', default='/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/',
+                    type=str, metavar='PATH', help='root directory of the records')
+parser.add_argument('--img-dir', default='/data5/Plankton_wi18/rawcolor_db2/images',
+                    type=str, metavar='PATH', help='path to images')
+parser.add_argument('--model', '-m', metavar='MODEL', default=RESNET50, choices=MODELS,
+                    help='pretrained model: ' + ' | '.join(MODELS) + ' (default: {})'.format(RESNET50))
+parser.add_argument('--data', default='/data5/lekevin/plankton/poseprediction/poseprediction_torch/data/3',
+                    type=str, metavar='DIR', help='path to dataset')
+parser.add_argument('-b', '--batch-size', default=16, type=int, metavar='N',
+                    help='mini-batch size (default: 16)')
+parser.add_argument('-i', '--input-size', default=384, type=int, metavar='N',
+                    help='input size of the network (default: 384)')
+parser.add_argument('--amp', default=1., type=float, metavar='AMPLITUDE',
+                    help='amplitude of the gaussian belief map (default: 1)')
+parser.add_argument('--std', default=3., type=float, metavar='STD',
+                    help='std of the gaussian belief map (default: 3)')
 
-
+def get_checkpoints():
+        """
+        iterate through all the checkpoints under self.roots
+        :return: generator of checkpoints filename
+        """
+        checkpoint_dir = os.path.join(args.root, 'checkpoints')
+        checkpoints = os.listdir(checkpoint_dir)
+        if 'checkpoint.pth.tar' in checkpoints:
+            checkpoints.remove('checkpoint.pth.tar')
+        checkpoints = sorted(checkpoints, key=lambda fn: int(fn[11:].split('.')[0]), reverse=True)
+        for checkpoint in checkpoints:
+            yield checkpoint
+            
 def savePredictionCoordinates(coordinates):
-    pickle.dump(coordinates, open("/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/predPose.p".format(0), "w+b"))
+    print 'Saving prediction in ' + os.path.join(args.root,'predPose.p')
+    pickle.dump(coordinates, open(os.path.join(args.root,'predPose.p'), "w+b"))
     return 0
 
 def estimateKeyPoints(model, data):
@@ -52,20 +84,24 @@ def estimateKeyPoints(model, data):
     return poseCoords
 
 def loadModel():
-    modelRoot = '/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/resnet50'
+    modelRoot = args.root
     model = PoseModel(model_name)
     data_set = 0
     # model = nn.DataParallel(model)  #TODO modify for AlexNet
-    model = model.cuda(0)
-    checkpoints = torch.load(modelRoot + '/{}/checkpoints/checkpoint-0.pth.tar'.format(data_set))
+    args.root = os.path.join(args.root, args.model,str(args.dataset_id))
+#     defaultCheckPoint = next(get_checkpoints(), 2)
+    defaultCheckPoint = 'checkpoint-15.pth.tar'
+    print 'Loading checkpoint ' + os.path.join(args.root,'checkpoints/',defaultCheckPoint)
+    checkpoints = torch.load(os.path.join(args.root,'checkpoints/',defaultCheckPoint))
     model.load_state_dict(checkpoints['state_dict'])
+    model = model.cuda(0)
     return model
 
 def logEvalStats(metrics):
     assert isinstance(metrics, dict)
-    with open('/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/stats.txt'.format(0
-    ), "w") as f:
-        for cls in metrics:
+    print 'Saving stats in ' + os.path.join(args.root,'stats.txt')
+    with open(os.path.join(args.root,'stats.txt'), "w") as f:
+        for cls in metrics.keys().sort():
             print "="*10 + '\n' + cls
             print "Head Distance: {}".format(metrics[cls]['Euclid']['Head Distance'])
             print "Tail Distancce: {}".format (metrics[cls]['Euclid']['Tail Distance'])
@@ -73,12 +109,12 @@ def logEvalStats(metrics):
             print "Pose Variability Training Set: {}".format(metrics[cls]['PoseVar'])
             print "KL Divergence: {}".format(metrics[cls]['KLDiv'])
 
-            f.write("="*10 + '\n' + cls)
+            f.write("="*10 + '\n' + cls + '\n')
             f.write("Head Distance: {}\n".format(metrics[cls]['Euclid']['Head Distance']))
-            f.write ("Tail Distancce: {}\n".format (metrics[cls]['Euclid']['Tail Distance']))
+            f.write ("Tail Distance: {}\n".format (metrics[cls]['Euclid']['Tail Distance']))
             f.write ("Average Distance: {}\n".format (metrics[cls]['Euclid']['Avg Distance']))
-            f.write("Pose Variability Training Set: {}".format(metrics[cls]['PoseVar']))
-            f.write("KL Divergence: {}".format(metrics[cls]['KLDiv']))
+            f.write("Pose Variability Training Set: {}\n".format(metrics[cls]['PoseVar']))
+            f.write("KL Divergence: {}\n".format(metrics[cls]['KLDiv']))
     f.close()
 
 def euclideanDistance(prediction, gtruthHead, gtruthTail):
@@ -113,88 +149,60 @@ if __name__ == '__main__':
     
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
     
-    img_dir = '/data5/Plankton_wi18/rawcolor_db/images'
-    csv_filename = '/data5/lekevin/plankton/poseprediction/data/data_{}.csv'
+    csv_filename = os.path.join(args.data, 'data_{}_%d.csv' % args.dataset_id)
 
-    phases = ['train', 'test']
-
+    phases = [TRAIN, TEST]
+    
     # dataset_mean, dataset_std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
     normalize = Normalize([0.5, 0.5, 0.5], [1, 1, 1])
-
-    batch_size = 16
-
-    input_size = (384, 384)
-
-    #_GPU = / 2
-
-    data_transform = {
-        'train': transforms.Compose([
-            Rescale(input_size),
-            RandomHorizontalFlip(),
-            RandomVerticalFlip(),
-            ToTensor(),
-            normalize
-        ]),
-        'valid': transforms.Compose([
-            Rescale(input_size),
-            ToTensor(),
-            normalize
-        ]),
-        'test': transforms.Compose([
-            Rescale(input_size),
-            ToTensor(),
-            normalize
-        ])
-    }
-
-    # Load datasets
-    print 'Loading datasets ...'
-    datasets = {x: PlanktonDataset(csv_file=csv_filename.format(x),
-                                   img_dir=img_dir,
-                                   transform=data_transform[x])
-                for x in phases}
-
-    dataloaders = {x: DataLoader(datasets[x], batch_size=batch_size,
-                                 shuffle=False, num_workers=4)
-                   for x in phases}
-
-    dataset_sizes = {x: len(datasets[x]) for x in phases}
 
     use_gpu = torch.cuda.is_available()
 
     # Load Model
     print 'Loading model ...'
     model = loadModel()
+    
+    # Load datasets
+    print 'Loading datasets ...'
+    datasets = {phase: DatasetWrapper(phase,
+                                      csv_filename=csv_filename.format(phase),
+                                      img_dir=args.img_dir,
+                                      input_size=(args.input_size, args.input_size),
+                                      output_size=get_output_size(model, args.input_size),
+                                      batch_size=args.batch_size,
+                                      amp=args.amp,
+                                      std=args.std)
+                for phase in phases}
+    
     predCoordinates = []
-    nSmpl = len(dataloaders['test'])
+    nSmpl = datasets[TEST].dataset_size
 
     # Estimate keypoints
-#     for i,data in enumerate(dataloaders['test']):
-#         temp = estimateKeyPoints(model, data)
-#         predCoordinates += temp
-#         if i%100==0:
-#             print i,'/',nSmpl
-#     predCoordinates = [np.fliplr(i) for i in predCoordinates]   # (y,x) --> (x,y)
-#     predCoordinates = np.asarray(predCoordinates)/48.           # 48x48 coordinates --> relative head&tail coordinates
-#     savePredictionCoordinates(predCoordinates)
+    for i,data in enumerate(datasets[TEST].dataloader):
+        temp = estimateKeyPoints(model, data)
+        predCoordinates += temp
+        if i%100==0:
+            print i,'/',nSmpl
+    predCoordinates = [np.fliplr(i) for i in predCoordinates]   # (y,x) --> (x,y)
+    predCoordinates = np.asarray(predCoordinates)/48.           # 48x48 coordinates --> relative head&tail coordinates
+    savePredictionCoordinates(predCoordinates)
 
-    # # Temporary
-    temp_predCoordinates = pickle.load(open("/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/resnet50/{}/predPose.p".format(0), "rb"))
+    # # Debug
+#     temp_predCoordinates = pickle.load(open(os.path.join(args.root,'predPose.p'), "rb"))
+#     predCoordinates = np.asarray([np.fliplr(i) for i in temp_predCoordinates])
     
-    predCoordinates = np.asarray([np.fliplr(i) for i in temp_predCoordinates])
-
     # Initialize pose & classes - Test Data
-    headX, headY = datasets['test'].data['head_x_rel'], datasets['test'].data['head_y_rel']
-    tailX, tailY =  datasets['test'].data['tail_x_rel'], datasets['test'].data['tail_y_rel']
+    headX, headY = datasets[TEST].dataset.data['head_x_rel'], datasets[TEST].dataset.data['head_y_rel']
+    tailX, tailY =  datasets[TEST].dataset.data['tail_x_rel'], datasets[TEST].dataset.data['tail_y_rel']
     gtruthHead, gtruthTail, poseTestSet = concatCoordinates(headX, headY, tailX, tailY)
-    testTaxLvlDatasets, testspecimenIDs = group_specimen2class(datasets['test'].data['images'],FAMILY)
+    testTaxLvlDatasets, testspecimenIDs = group_specimen2class(datasets[TEST].dataset.data['images'],FAMILY)
 
 
     # Initialize pose & classes - Train Data
-    headX, headY = datasets['train'].data['head_x_rel'], datasets['train'].data['head_y_rel']
-    tailX, tailY =  datasets['train'].data['tail_x_rel'], datasets['train'].data['tail_y_rel']
+    headX, headY = datasets[TRAIN].dataset.data['head_x_rel'], datasets[TRAIN].dataset.data['head_y_rel']
+    tailX, tailY =  datasets[TRAIN].dataset.data['tail_x_rel'], datasets[TRAIN].dataset.data['tail_y_rel']
     __, __, poseTrainSet = concatCoordinates(headX, headY, tailX, tailY)
-    trainTaxLvlDatasets, trainspecimenIDs = group_specimen2class(datasets['train'].data['images'],FAMILY)
+    trainTaxLvlDatasets, trainspecimenIDs = group_specimen2class(datasets[TRAIN].dataset.data['images'],FAMILY)
 
     # Evaluate Model
     print 'Evaluating model (Euclidean, Pose Variability, KL Divergence) ...'
