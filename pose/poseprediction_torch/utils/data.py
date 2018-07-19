@@ -123,7 +123,10 @@ def eval_euc_dists(pred_maps, targets):
 
 def get_output_size(model, input_size):
     inputs = torch.randn(1, 3, input_size, input_size)
-    y = model(Variable(inputs))
+    if 'cuda' not in str(inputs.type()):
+        y = model(Variable(inputs.cuda()))
+    else:
+        y = model(Variable(inputs))
     #try:
     #    if isinstance(y, torch.autograd.variable.Variable):
     #        return y.size(-1)

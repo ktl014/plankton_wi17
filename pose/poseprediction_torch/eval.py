@@ -25,12 +25,12 @@ def savePredictionCoordinates(coordinates):
     pickle.dump(coordinates, open("best_models/{}/predPose.p".format(model_name), "wb"))
     return 0
 
-def estimateKeyPoints(model, data):
+def estimateKeyPoints(model, data, use_gpu):
     model.eval()
     inputs, target, coordinates = data['image'], data['target_map'], data['coordinates']
     if use_gpu:
-        inputs = Variable(inputs.cuda(_GPU))
-        target = Variable(target.cuda(_GPU))
+        inputs = Variable(inputs.cuda())
+        target = Variable(target.cuda())
     else:
         inputs, target = Variable(inputs), Variable(target)
     outputs = model(inputs)
