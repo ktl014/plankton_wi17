@@ -82,7 +82,7 @@ class Evaluator(object):
         return headXY, tailXY, poseXY
 
     def sort_classes_poses_etc(self):
-        self.level = 'Genus'
+        self.level = 'Family'
         _, _, poseXY = self.initialize_posemetrics(phase=TEST)
         specimenSets, specimenIDs = group_specimen2class (self.dataset[TEST].dataset.data['images'], self.level)
         classIdx = {}
@@ -124,7 +124,9 @@ class Evaluator(object):
         checkpoints = os.listdir(checkpoint_dir)
         if 'checkpoint.pth.tar' in checkpoints:
             checkpoints.remove('checkpoint.pth.tar')
-        checkpoints = sorted(checkpoints, key=lambda fn: int(fn[11:].split('.')[0]), reverse=True)
+            checkpoints.insert(0,'checkpoint.pth.tar')
+        checkpoints[1:] = sorted(checkpoints[1:], key=lambda fn: int(fn[11:].split('.')[0]), reverse=True)
+        
         for checkpoint in checkpoints:
             yield checkpoint
 
@@ -260,13 +262,14 @@ class Evaluator(object):
         #TODO Insert histogram of class accuracies / confusion matrix
         _, specimenIDs, classIdx, poseXY = self.sort_classes_poses_etc()
         cls = [i.split()[0] for i in sorted(self.dataset[TEST].dataset.classes)]
-        # showClassificationDistribution(cmRate.diagonal, title='Dataset {} Class Accuracies'.format(self.args.dataset_id))
-        #plotPoseVarKLDiv(self.results_dir, class_accuracy, self.datasetIDs,
-         #                ylbl = 'Class Accuracy')
+        
+#         showClassificationDistribution(np.diag(cmRate), title='Dataset {} Class Accuracies'.format(self.args.dataset_id))
+#         plotPoseVarKLDiv(self.results_dir, class_accuracy, self.datasetIDs,
+#                          ylbl = 'Class Accuracy')
         showConfusionMatrix(self.results_dir, cmRate, classes=cls,
                             title='Confusion Matrix (Dataset {})'.format(self.args.dataset_id))
-        #plotPoseOrientation(self.results_dir, predCls, gtCls, poseXY,
-        #                    dict(zip(self.dataset[TEST].dataset.classes, class_accuracy)), classIdx, specimenIDs)
+#         plotPoseOrientation(self.results_dir, predCls, gtCls, poseXY,
+#                             dict(zip(self.dataset[TEST].dataset.classes, class_accuracy)), classIdx, specimenIDs)
 
     def score_entiredataset(self):
         print('=> Results over {} randomly sampled test sets'.format(len(self.datasetIDs)))
@@ -328,7 +331,12 @@ if __name__ == '__main__':
 
             gt_classes.append(data['gt_classes'].data)
             pred_classes.append(data['pred_classes'])
-
+        
+#         with open('/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/eval_debug/gtCls.p',"r") as f1:
+#             gt_classes = pickle.load(f1)
+#         with open('/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/eval_debug/predCls.p',"r") as f2:
+#             pred_classes = pickle.load(f2)
+        
         if DEBUG:
             root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/'
             gt_classes = pickle.load(open(root + 'tmp/gtCls.p', "rb"))

@@ -129,6 +129,12 @@ class Trainer(object):
             self.load_checkpoint(os.path.join(self.checkpoints_dir, 'checkpoint.pth.tar'))
 
         cudnn.benchmark = True
+        
+        argdict = vars(args)
+        with open(os.path.join(self.root,'args.csv'), 'wb') as args_file:
+            writer = csv.writer(args_file)
+            for key, value in argdict.items():
+                writer.writerow([key,value])
 
         self.start_epoch = args.start_epoch
         self.end_epoch = self.start_epoch + args.epochs

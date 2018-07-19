@@ -59,7 +59,9 @@ def get_checkpoints():
         checkpoints = os.listdir(checkpoint_dir)
         if 'checkpoint.pth.tar' in checkpoints:
             checkpoints.remove('checkpoint.pth.tar')
-        checkpoints = sorted(checkpoints, key=lambda fn: int(fn[11:].split('.')[0]), reverse=True)
+            checkpoints.insert(0,'checkpoint.pth.tar')
+        checkpoints[1:] = sorted(checkpoints[1:], key=lambda fn: int(fn[11:].split('.')[0]), reverse=True)
+        
         for checkpoint in checkpoints:
             yield checkpoint
             
@@ -89,8 +91,7 @@ def loadModel():
     data_set = 0
     # model = nn.DataParallel(model)  #TODO modify for AlexNet
     args.root = os.path.join(args.root, args.model,str(args.dataset_id))
-#     defaultCheckPoint = next(get_checkpoints(), 2)
-    defaultCheckPoint = 'checkpoint-15.pth.tar'
+    defaultCheckPoint = next(get_checkpoints(), 0)
     print 'Loading checkpoint ' + os.path.join(args.root,'checkpoints/',defaultCheckPoint)
     checkpoints = torch.load(os.path.join(args.root,'checkpoints/',defaultCheckPoint))
     model.load_state_dict(checkpoints['state_dict'])
@@ -100,8 +101,10 @@ def loadModel():
 def logEvalStats(metrics):
     assert isinstance(metrics, dict)
     print 'Saving stats in ' + os.path.join(args.root,'stats.txt')
+    classes = metrics.keys()
+    classes.sort()
     with open(os.path.join(args.root,'stats.txt'), "w") as f:
-        for cls in metrics.keys().sort():
+        for cls in classes:
             print "="*10 + '\n' + cls
             print "Head Distance: {}".format(metrics[cls]['Euclid']['Head Distance'])
             print "Tail Distancce: {}".format (metrics[cls]['Euclid']['Tail Distance'])

@@ -2,7 +2,6 @@ from __future__ import print_function, division
 
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
 
 import torch.nn as nn
 import torch.optim as optim
@@ -15,6 +14,7 @@ import copy
 import argparse
 import shutil
 import datetime
+import csv
 
 from dataset import DatasetWrapper
 from model import PoseModel
@@ -61,6 +61,8 @@ parser.add_argument('--lr-step-size', default=15, type=int, metavar='N',
                     help='the step size of learning rate scheduler (default: 15)')
 parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
                     help='evaluate model on validation set')
+parser.add_argument('--gamma', default=0.1, type=float, metavar='G',
+                    help='gamma for lr step size')
 
 PHASES = [TRAIN, TEST]
 
@@ -77,7 +79,7 @@ def main():
     criterion = nn.MSELoss()
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=0.1)
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.gamma)
     print('=> done!')
 
     datasets = {phase: DatasetWrapper(phase,
@@ -104,6 +106,9 @@ class Trainer(object):
 
         self.phases = [TRAIN, VALID] if args.evaluate else [TRAIN]
         self.root = self.get_root_dir()
+        
+        
+    
         self.log_dir = os.path.join(self.root, 'log')
         self.checkpoints_dir = os.path.join(self.root, 'checkpoints')
 
@@ -121,7 +126,13 @@ class Trainer(object):
             self.load_checkpoint(os.path.join(self.checkpoints_dir, 'checkpoint.pth.tar'))
 
         cudnn.benchmark = True
-
+        
+        argdict = vars(args)
+        with open(os.path.join(self.root,'args.csv'), 'wb') as args_file:
+            writer = csv.writer(args_file)
+            for key, value in argdict.items():
+                writer.writerow([key,value])
+        
         self.start_epoch = args.start_epoch
         self.end_epoch = self.start_epoch + args.epochs
         print('=> start from epoch {}, end at epoch {}'.format(self.start_epoch, self.end_epoch))
