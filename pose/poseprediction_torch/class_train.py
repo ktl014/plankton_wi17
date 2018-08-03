@@ -17,6 +17,7 @@ import copy
 import argparse
 import shutil
 import datetime
+import csv
 
 from dataset import DatasetWrapper
 from model import ClassModel, PoseClassModel
