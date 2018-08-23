@@ -1,71 +1,67 @@
-import tensorflow as tf
-import numpy as np
-import scipy.misc
-
-try:
-    from StringIO import StringIO  # Python 2.7
-except ImportError:
-    from io import BytesIO  # Python 3.x
+import os
+from visualdl import LogWriter
+from utils.constants import *
 
 
 class Logger(object):
+    logger = None
 
-    def __init__(self, log_dir):
-        """Create a summary writer logging to log_dir."""
-        self.writer = tf.summary.FileWriter(log_dir)
+    def __init__(self, name, log_dir, resume, phases=(TRAIN, VALID), step=10):
+        if not os.path.isdir(log_dir):
+            os.makedirs(log_dir)
 
-    def scalar_summary(self, tag, value, step):
-        """Log a scalar variable."""
-        summary = tf.Summary(value=[tf.Summary.Value(tag=tag, simple_value=value)])
-        self.writer.add_summary(summary, step)
+        if Logger.logger is None:
+            Logger.logger = LogWriter(log_dir, sync_cycle=10)
 
-    def image_summary(self, tag, images, step):
-        """Log a list of images."""
+        self.scalars = {}
+        self.count = {phase: 0 for phase in phases}
+        self.fhandle = {phase: open(os.path.join(log_dir, '{}_{}.txt'.format(phase, name)), 'a') for phase in phases}
+        self.step = step
 
-        img_summaries = []
-        for i, img in enumerate(images):
-            # Write the image to a string
-            try:
-                s = StringIO()
-            except:
-                s = BytesIO()
-            scipy.misc.toimage(img).save(s, format="png")
+        for phase in phases:
+            with self.logger.mode(phase):
+                self.scalars[phase] = self.logger.scalar('scalars/{}_{}'.format(phase, name))
 
-            # Create an Image object
-            img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
-                                       height=img.shape[0],
-                                       width=img.shape[1])
-            # Create a Summary value
-            img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
+            if resume:
+                f = open(os.path.join(log_dir, '{}_{}.txt'.format(phase, name)), 'r')
+                for i, record in enumerate(f):
+                    if (i % 10 == 0 or phase != TRAIN) and len(record) > 1:
+                        self.scalars[phase].add_record(i, float(record))
+                    self.count[phase] += 1
+                print('=>     {} {} {} data points loaded'.format(phase, name, self.count[phase]))
+                f.close()
 
-        # Create and write Summary
-        summary = tf.Summary(value=img_summaries)
-        self.writer.add_summary(summary, step)
+    def add_record(self, phase, record):
+        if phase != TRAIN or self.count[phase] % 10 == 0:
+            self.scalars[phase].add_record(self.count[phase], record)
+        self.fhandle[phase].write('{:.6f}\n'.format(record))
+        self.count[phase] += 1
 
-    def histo_summary(self, tag, values, step, bins=1000):
-        """Log a histogram of the tensor of values."""
+    @staticmethod
+    def write_meta(path, args):
+        meta_file = open(os.path.join(path, 'meta.txt'), 'a')
+        for arg in vars(args):
+            meta_file.write('{}: {}\n'.format(arg, getattr(args, arg)))
+        meta_file.write('\n\n')
 
-        # Create a histogram using numpy
-        counts, bin_edges = np.histogram(values, bins=bins)
+    @staticmethod
+    def read_meta(meta_file):
+        class DotDict(dict):
+            __getattr__ = dict.get
+            __setattr__ = dict.__setitem__
+            __delattr__ = dict.__delitem__
 
-        # Fill the fields of the histogram proto
-        hist = tf.HistogramProto()
-        hist.min = float(np.min(values))
-        hist.max = float(np.max(values))
-        hist.num = int(np.prod(values.shape))
-        hist.sum = float(np.sum(values))
-        hist.sum_squares = float(np.sum(values ** 2))
+        args = DotDict()
+        for line in open(meta_file, 'r').read().splitlines():
+            if line:
+                key, value = line.split(': ')
+                try:
+                    value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
+                args[key] = value
+        return args
 
-        # Drop the start of the first bin
-        bin_edges = bin_edges[1:]
-
-        # Add bin edges and counts
-        for edge in bin_edges:
-            hist.bucket_limit.append(edge)
-        for c in counts:
-            hist.bucket.append(c)
-
-        # Create and write Summary
-        summary = tf.Summary(value=[tf.Summary.Value(tag=tag, histo=hist)])
-        self.writer.add_summary(summary, step)
-        self.writer.flush()
