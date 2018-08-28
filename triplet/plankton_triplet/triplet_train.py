@@ -31,11 +31,11 @@ from utils.data import eval_euc_dists, eval_class_acc, get_output_size
 parser = argparse.ArgumentParser(description='PyTorch CPM Training')
 parser.add_argument('-d', '--dataset-id', default=0, type=int, metavar='N',
                     help='dataset id to use')
-parser.add_argument('--data', default='/home/jovyan/plankton_wi17/data/3_flipped',
+parser.add_argument('--data', default='/data5/lekevin/plankton/poseprediction/poseprediction_torch/data/3_flipped',
                     type=str, metavar='DIR', help='path to dataset')
-parser.add_argument('--root', default='/home/jovyan/plankton_wi17/records/',
+parser.add_argument('--root', default='/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/',
                     type=str, metavar='PATH', help='root directory of the records')
-parser.add_argument('--img-dir', default='/home/jovyan/plankton_wi17/images/',
+parser.add_argument('--img-dir', default='/data5/Plankton_wi18/rawcolor_db2/images/',
                     type=str, metavar='PATH', help='path to images')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
