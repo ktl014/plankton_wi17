@@ -15,3 +15,7 @@ turk_env/
 bad/
 turk/results
 turk/batches
+mvcnn/MVCNN-PyTorch/
+mvcnn/drone_mvcnn/
+mvcnn/pytorch-rotationnet/
+triplet/triplet_example/
