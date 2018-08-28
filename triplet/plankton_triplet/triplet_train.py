@@ -31,16 +31,16 @@ from utils.data import eval_euc_dists, eval_class_acc, get_output_size
 parser = argparse.ArgumentParser(description='PyTorch CPM Training')
 parser.add_argument('-d', '--dataset-id', default=0, type=int, metavar='N',
                     help='dataset id to use')
-parser.add_argument('--data', default='/data5/lekevin/plankton/poseprediction/poseprediction_torch/data/3_flipped',
+parser.add_argument('--data', default='/home/jovyan/plankton_wi17/data/3_flipped',
                     type=str, metavar='DIR', help='path to dataset')
-parser.add_argument('--root', default='/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/',
+parser.add_argument('--root', default='/home/jovyan/plankton_wi17/records/',
                     type=str, metavar='PATH', help='root directory of the records')
-parser.add_argument('--img-dir', default='/data5/Plankton_wi18/rawcolor_db2/images/',
+parser.add_argument('--img-dir', default='/home/jovyan/plankton_wi17/images/',
                     type=str, metavar='PATH', help='path to images')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
-# parser.add_argument('--model', '-m', metavar='MODEL', default=MVCNNAVG, choices=MODELS,
-#                     help='pretrained model: ' + ' | '.join(MODELS) + ' (default: {})'.format(RESNET50))
+parser.add_argument('--model', '-m', metavar='MODEL', default=RESNET50, choices=MODELS,
+                    help='pretrained model: ' + ' | '.join(MODELS) + ' (default: {})'.format(RESNET50))
 parser.add_argument('-g', '--gpu', required=True, type=int, metavar='N',
                      help='GPU to use')
 parser.add_argument('--epochs', default=31, type=int, metavar='N',
@@ -88,7 +88,7 @@ def main():
     print('=> loading model...')
     num_class = DatasetWrapper.get_num_class(csv_filename.format(TRAIN))
     print('=>     {} classes in total'.format(num_class))
-    model = resnettrip(pretrained=args.scratch,num_classes=num_class)
+    model = resnettrip(pre_trained=args.scratch)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.lr_decay)
@@ -99,11 +99,9 @@ def main():
                                       img_dir=args.img_dir,
                                       input_size=(args.input_size, args.input_size),
                                       #output_size=get_output_size(model, args.input_size),
-                                      multiview=True,
                                       batch_size=args.batch_size,
                                       amp=args.amp,
-                                      std=args.std,
-                                      views = args.trainviews)
+                                      std=args.std)
                }
 
     datasets[TEST] = DatasetWrapper(TEST,
@@ -111,11 +109,9 @@ def main():
                                     img_dir=args.img_dir,
                                     input_size=(args.input_size, args.input_size),
                                     #output_size=get_output_size(model, args.input_size),
-                                    multiview=True,
                                     batch_size=args.batch_size,
                                     amp=args.amp,
-                                    std=args.std,
-                                    views=args.testviews
+                                    std=args.std
                                    )
     
     trainer = Trainer(datasets, model, optimizer, exp_lr_scheduler)
@@ -128,7 +124,7 @@ class Trainer(object):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.loss = TripletLoss(args.margin)
-        self.phase = [TRAIN, TEST] if args.evaluate else [TRAIN]
+        self.phases = [TRAIN, TEST] if args.evaluate else [TRAIN]
 
         self.root = self.get_root_dir()
         self.log_dir = os.path.join(self.root, 'log')

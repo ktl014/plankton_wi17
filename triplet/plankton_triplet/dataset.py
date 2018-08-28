@@ -134,7 +134,7 @@ class TripletPlanktonDataSet(Dataset):
             neg_specs = specimens[specimens != spec]
             pos_view = orig.loc[orig['specimen_id'] == spec]
             for anchor in pos_view.index:
-                pos = choice(pos_view.index[pos_view.index != index])
+                pos = choice(pos_view.index[pos_view.index != anchor])
                 neg_spec = choice(neg_specs)
                 neg_view = orig.loc[orig['specimen_id'] == neg_spec]
                 neg = choice(neg_view.index)
@@ -180,8 +180,7 @@ class DatasetWrapper(object):
                                        transform=self.data_transform[self.phase],
                                        amp=self.amp,
                                        std=self.std,
-                                       output_size=self.output_size,
-                                       views=views)
+                                       output_size=self.output_size)
 
         self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=(phase == TRAIN), num_workers=4)
         self.dataset_size = len(self.dataset)

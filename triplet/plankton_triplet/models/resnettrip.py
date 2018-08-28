@@ -9,7 +9,8 @@ class RESNETTRIP(nn.Module):
         super(RESNETTRIP, self).__init__()
         self.features = nn.Sequential(model.conv1, model.bn1, model.relu, model.maxpool,
                                         model.layer1, model.layer2, model.layer3, model.layer4, model.avgpool)
-        self.fc = nn.Linear(512 * block.expansion, embeddings_dim)
+        numfts = model.fc.in_features
+        self.fc = nn.Linear(numfts, embeddings_dim)
         self.l2norm = lambda x: x/x.pow(2).sum(1, keepdim=True).sqrt()
 #         self.l2norm = nn.functional.normalize()
         
@@ -19,7 +20,7 @@ class RESNETTRIP(nn.Module):
         embeddings = []
         for item in x:
             embedding = self.get_embedding(item)
-            emeddings.append(embedding)
+            embeddings.append(embedding)
          
         return embeddings
     
