@@ -381,3 +381,10 @@ def randomNormalAngle(scale):
     angles[angles < -np.pi] = angles[angles < -np.pi] + 2*np.pi
     angles[angles > np.pi] = angles[angles > np.pi] - 2*np.pi
     return angles
+
+def evaulateTriplet(anchor,positive,negative,threshold=1.242):
+    distance_positive = (anchor - positive).pow(2).sum(1)  # .pow(.5)
+    distance_negative = (anchor - negative).pow(2).sum(1)  # .pow(.5)
+    ta = sum(distance_positive <= threshold)
+    fa = sum(distance_negative <= threshold)
+    return ta,fa

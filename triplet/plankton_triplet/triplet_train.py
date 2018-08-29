@@ -25,7 +25,7 @@ from transform import *
 from logger import Logger
 from losses import TripletLoss
 from utils.constants import *
-from utils.data import eval_euc_dists, eval_class_acc, get_output_size
+from utils.data import eval_euc_dists, evaulateTriplet, get_output_size
 
 
 parser = argparse.ArgumentParser(description='PyTorch CPM Training')
@@ -103,8 +103,9 @@ def main():
                                       amp=args.amp,
                                       std=args.std)
                }
-
-    datasets[TEST] = DatasetWrapper(TEST,
+    
+    if args.evaluate:
+        datasets[TEST] = DatasetWrapper(TEST,
                                     csv_filename=csv_filename.format(TEST),
                                     img_dir=args.img_dir,
                                     input_size=(args.input_size, args.input_size),
@@ -158,8 +159,8 @@ class Trainer(object):
         print('=> initializing logger...')
         # self.loss_logger = Logger('loss', self.log_dir, args.resume)
         # self.err_logger = Logger('err', self.log_dir, args.resume)
-        self.log_vars = ['loss', 'class_loss', 'class_accuracy']
-        self.main_var = 'class_accuracy'
+        self.log_vars = ['loss', 'true_accept', 'false_accept', 'accuracy']
+        self.main_var = 'accuracy'
         self.loggers = {log_var: Logger(log_var, self.log_dir, args.resume, phases=self.phases)
                         for log_var in self.log_vars}
 
@@ -250,11 +251,12 @@ class Trainer(object):
                     
                     loss = self.loss(embeddings[0],embeddings[1],embeddings[2])
                     
-#                     class_correct = eval_class_acc(outputs_class, targets)
+                    ta,fa = evaulateTriplet(embeddings[0],embeddings[1],embeddings[2])
 
                     vars = {'loss': loss.data.item(),
-                            'class_loss': loss.data.item(),
-                            'class_accuracy': 0}
+                            'true_accept': ta.item(),
+                            'false_accept': fa.item(),
+                            'accuracy': ta.item() - fa.item()}
                     
                     
                     running_vars = {var: running_vars[var] + vars[var] for var in self.log_vars}
@@ -271,12 +273,14 @@ class Trainer(object):
                     
                     eta = (time.time() - epoch_since) / total * (len(self.datasets[phase]) - total)
 
-                    term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / float(total)) for var in self.log_vars])
+                    term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / float(total)) for var in self.log_vars[0:3]])
+                    term_log = ', '.join([term_log, '{}: {:.4f}'.format(self.main_var, running_vars[self.main_var] / (2*float(total)))])
                     print('{} {}/{} ({:.0f}%), {}, ETA: {:.0f}s     \r'
                           .format('Training' if phase == TRAIN else 'Validating', total, len(self.datasets[phase]),
                                   100.0 * total / len(self.datasets[phase]), term_log, eta), end='')
                 
-                epoch_vars = {var: running_vars[var] / float(total) for var in self.log_vars}
+                epoch_vars = {var: running_vars[var] / float(total) for var in self.log_vars[0:3]}
+                epoch_vars[self.main_var] = running_vars[self.main_var] / 2*float(total)
 
                 if phase == TEST:
                     for var in self.log_vars:
@@ -286,13 +290,13 @@ class Trainer(object):
                     if is_best:
                         self.best_acc = epoch_vars[self.main_var]
                         self.best_model_wts = copy.deepcopy(self.model.state_dict())
-
+                print(epoch_vars)
                 print()
                 term_log = ', '.join(['{}: {:.4f}'.format(var, epoch_vars[var]) for var in self.log_vars])
                 print('{} {} Time Elapsed: {:.0f}s'
                       .format(phase, term_log, time.time() - epoch_since))
                 print()
-            running_vars['class_accuracy'] 
+            
             state = {
                 'epoch': epoch + 1,
                 'state_dict': self.model.state_dict(),
