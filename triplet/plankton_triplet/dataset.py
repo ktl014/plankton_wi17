@@ -98,6 +98,7 @@ class TripletPlanktonDataSet(Dataset):
     def __getitem__(self, index):
         orginal_views = self.partition[index]
         views = []
+        targets = []
 
         for view in orginal_views:
             img_name = os.path.join(self.img_dir,
@@ -116,9 +117,9 @@ class TripletPlanktonDataSet(Dataset):
             if self.transform is not None:
                 sample = self.transform(sample)
             views.append(sample['image'])
-        target = self.class_to_index[self.data.loc[orginal_views[0], self.level]]
+            targets.append(self.class_to_index[self.data.loc[view, self.level]])
         sample = {'views': views,
-                  'target': target,
+                  'targets': targets,
                   'view_ids': orginal_views}
         return sample
 
@@ -182,7 +183,7 @@ class DatasetWrapper(object):
                                        std=self.std,
                                        output_size=self.output_size)
 
-        self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=(phase == TRAIN), num_workers=4)
+        self.dataloader = DataLoader(self.dataset, batch_size=self.batch_size, shuffle=(phase == TRAIN), num_workers=0)
         self.dataset_size = len(self.dataset)
 
     def __len__(self):

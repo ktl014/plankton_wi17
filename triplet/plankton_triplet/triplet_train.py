@@ -18,6 +18,7 @@ import argparse
 import shutil
 import datetime
 import csv
+from sklearn.neighbors import KNeighborsClassifier
 
 from dataset import DatasetWrapper
 from models.resnettrip import *
@@ -163,6 +164,8 @@ class Trainer(object):
         self.main_var = 'accuracy'
         self.loggers = {log_var: Logger(log_var, self.log_dir, args.resume, phases=self.phases)
                         for log_var in self.log_vars}
+        
+        self.classifier = KNeighborsClassifier()
 
         Logger.write_meta(self.root, args)
         print('=> done!')
@@ -227,7 +230,9 @@ class Trainer(object):
         for epoch in range(self.start_epoch, self.end_epoch):
             print('Epoch {}/{}'.format(epoch, self.end_epoch))
             print('-' * 10)
-
+            
+            X = []
+            y  =[]
             for phase in self.phases:
                 if phase == TRAIN:
                     self.scheduler.step()
@@ -241,22 +246,32 @@ class Trainer(object):
                 
                 for i, data in enumerate(self.datasets[phase].dataloader):
                     inputs = data['views']
-                    targets = data['target']
+                    targets = data['targets']
                     inputs = np.stack(inputs, axis=1)
+                    targets = np.stack(targets,axis=1)
 
                     inputs = torch.from_numpy(inputs)
-                    inputs, targets = self.to_variable(inputs), self.to_variable(targets)
-                    
+                    inputs = self.to_variable(inputs)
                     embeddings = self.model(inputs)
                     
                     loss = self.loss(embeddings[0],embeddings[1],embeddings[2])
                     
+                    
                     ta,fa = evaulateTriplet(embeddings[0],embeddings[1],embeddings[2])
-
+                    if phase == TRAIN:
+                        for x in range(3):
+                            accuracy = 0
+                            X.extend(embeddings[x].cpu().detach().numpy())
+                            y.extend(targets[:,x])
+                    elif phase == TEST:
+                        for x in range(3):
+                            prediction = self.classifier.predict(embeddings[x].cpu().detach().numpy())
+                            accuracy = sum(prediction == targets[:,x])
+                        
                     vars = {'loss': loss.data.item(),
                             'true_accept': ta.item(),
                             'false_accept': fa.item(),
-                            'accuracy': ta.item() - fa.item()}
+                            'accuracy': accuracy}
                     
                     
                     running_vars = {var: running_vars[var] + vars[var] for var in self.log_vars}
@@ -269,18 +284,18 @@ class Trainer(object):
                         for var in self.log_vars:
                             self.loggers[var].add_record(phase, vars[var])
                     
-                    total += targets.size(0)
+                    total += targets.shape[0]
                     
                     eta = (time.time() - epoch_since) / total * (len(self.datasets[phase]) - total)
 
                     term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / float(total)) for var in self.log_vars[0:3]])
-                    term_log = ', '.join([term_log, '{}: {:.4f}'.format(self.main_var, running_vars[self.main_var] / (2*float(total)))])
+                    term_log = ', '.join([term_log, '{}: {:.4f}'.format(self.main_var, running_vars[self.main_var] / (3*float(total)))])
                     print('{} {}/{} ({:.0f}%), {}, ETA: {:.0f}s     \r'
                           .format('Training' if phase == TRAIN else 'Validating', total, len(self.datasets[phase]),
                                   100.0 * total / len(self.datasets[phase]), term_log, eta), end='')
                 
                 epoch_vars = {var: running_vars[var] / float(total) for var in self.log_vars[0:3]}
-                epoch_vars[self.main_var] = running_vars[self.main_var] / 2*float(total)
+                epoch_vars[self.main_var] = running_vars[self.main_var] / (3*float(total))
 
                 if phase == TEST:
                     for var in self.log_vars:
@@ -290,12 +305,17 @@ class Trainer(object):
                     if is_best:
                         self.best_acc = epoch_vars[self.main_var]
                         self.best_model_wts = copy.deepcopy(self.model.state_dict())
-                print(epoch_vars)
+                        
+                if TEST in self.phases and phase == TRAIN:
+                    self.classifier.fit(X,y)
+                
                 print()
                 term_log = ', '.join(['{}: {:.4f}'.format(var, epoch_vars[var]) for var in self.log_vars])
                 print('{} {} Time Elapsed: {:.0f}s'
                       .format(phase, term_log, time.time() - epoch_since))
                 print()
+                
+                
             
             state = {
                 'epoch': epoch + 1,
