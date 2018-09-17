@@ -20,8 +20,8 @@ import datetime
 import csv
 from sklearn.neighbors import KNeighborsClassifier
 
-from dataset import DatasetWrapper
-from models.resnettrip import *
+from mvdataset import DatasetWrapper
+from models.resnetmvtrip import *
 from transform import *
 from logger import Logger
 from losses import TripletLoss
@@ -74,6 +74,10 @@ parser.add_argument('--scratch', dest='scratch', action='store_false',
                     help='train model from scratch')
 parser.add_argument('--margin', dest='margin', default=1, type=float, metavar='M',
                     help='loss margin')
+parser.add_argument('-trainv', '--trainviews', default=12, type=int, metavar='PATH',
+                    help='number of training views')
+parser.add_argument('-testv', '--testviews', default=12, type=int, metavar='PATH',
+                    help='number of test views')
 
 phases = [TRAIN]
 
@@ -89,7 +93,7 @@ def main():
     print('=> loading model...')
     num_class = DatasetWrapper.get_num_class(csv_filename.format(TRAIN))
     print('=>     {} classes in total'.format(num_class))
-    model = resnettrip(pre_trained=args.scratch)
+    model = resnetmvtrip(pre_trained=args.scratch)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.lr_decay)
@@ -99,22 +103,23 @@ def main():
                                       csv_filename=csv_filename.format(TRAIN),
                                       img_dir=args.img_dir,
                                       input_size=(args.input_size, args.input_size),
-                                      #output_size=get_output_size(model, args.input_size),
                                       batch_size=args.batch_size,
                                       amp=args.amp,
-                                      std=args.std)
+                                      std=args.std,
+                                      views=args.trainviews
+                                     )
                }
     
     if args.evaluate:
         datasets[TEST] = DatasetWrapper(TEST,
-                                    csv_filename=csv_filename.format(TEST),
-                                    img_dir=args.img_dir,
-                                    input_size=(args.input_size, args.input_size),
-                                    #output_size=get_output_size(model, args.input_size),
-                                    batch_size=args.batch_size,
-                                    amp=args.amp,
-                                    std=args.std
-                                   )
+                                        csv_filename=csv_filename.format(TEST),
+                                        img_dir=args.img_dir,
+                                        input_size=(args.input_size, args.input_size),
+                                        batch_size=args.batch_size,
+                                        amp=args.amp,
+                                        std=args.std,
+                                        views = args.testviews
+                                       )
     
     trainer = Trainer(datasets, model, optimizer, exp_lr_scheduler)
     trainer.train()
@@ -232,12 +237,13 @@ class Trainer(object):
             print('-' * 10)
             
             X = []
-            y  =[]
+            y = []
             for phase in self.phases:
                 if phase == TRAIN:
                     self.scheduler.step()
                     self.model.train(True)
                 else:
+                    torch.set_grad_enabled(False)
                     self.model.train(False)
 
                 running_vars = {var: 0 for var in self.log_vars}
@@ -247,55 +253,80 @@ class Trainer(object):
                 for i, data in enumerate(self.datasets[phase].dataloader):
                     inputs = data['views']
                     targets = data['targets']
-                    inputs = np.stack(inputs, axis=1)
-                    targets = np.stack(targets,axis=1)
-
-                    inputs = torch.from_numpy(inputs)
-                    inputs = self.to_variable(inputs)
-                    embeddings = self.model(inputs)
                     
-                    loss = self.loss(embeddings[0],embeddings[1],embeddings[2])
-                    
-                    
-                    ta,fa = evaulateTriplet(embeddings[0],embeddings[1],embeddings[2])
                     if phase == TRAIN:
+                        embeddings = []
                         for x in range(3):
-                            accuracy = 0
-                            X.extend(embeddings[x].cpu().detach().numpy())
-                            y.extend(targets[:,x])
-                    elif phase == TEST:
-                        for x in range(3):
-                            prediction = self.classifier.predict(embeddings[x].cpu().detach().numpy())
-                            accuracy = sum(prediction == targets[:,x])
+                            part = inputs[x]
+                            part = np.stack(part,axis=0)
+                            part = torch.from_numpy(part)
+                            part = self.to_variable(part)
+                            embeddings.append(self.model(part))
+                            
+                        loss = self.loss(embeddings[0],embeddings[1],embeddings[2])
+                        ta,fa = evaulateTriplet(embeddings[0],embeddings[1],embeddings[2])
                         
-                    vars = {'loss': loss.data.item(),
+                        X.extend(embeddings[0].cpu().detach().numpy())
+                        y.extend(targets[0])
+                        total += targets[0].shape[0]
+                        
+                        vars = {'loss': loss.data.item(),
                             'true_accept': ta.item(),
                             'false_accept': fa.item(),
-                            'accuracy': accuracy}
+                            'accuracy': 0}
                     
                     
-                    running_vars = {var: running_vars[var] + vars[var] for var in self.log_vars}
-                    
-                    if phase == TRAIN:
+                        running_vars = {var: running_vars[var] + vars[var] for var in self.log_vars}
+                        
                         self.optimizer.zero_grad()
                         loss.backward()
                         self.optimizer.step()
 
                         for var in self.log_vars:
                             self.loggers[var].add_record(phase, vars[var])
-                    
-                    total += targets.shape[0]
-                    
-                    eta = (time.time() - epoch_since) / total * (len(self.datasets[phase]) - total)
+                            
+                        eta = (time.time() - epoch_since) / total * (len(self.datasets[phase]) - total)
 
-                    term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / float(total)) for var in self.log_vars[0:3]])
-                    term_log = ', '.join([term_log, '{}: {:.4f}'.format(self.main_var, running_vars[self.main_var] / (3*float(total)))])
-                    print('{} {}/{} ({:.0f}%), {}, ETA: {:.0f}s     \r'
-                          .format('Training' if phase == TRAIN else 'Validating', total, len(self.datasets[phase]),
-                                  100.0 * total / len(self.datasets[phase]), term_log, eta), end='')
+                        term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / float(total)) for var in self.log_vars[0:3]])
+                        term_log = ', '.join([term_log, '{}: {:.4f}'.format(self.main_var, running_vars[self.main_var] / (3*float(total)))])
+                        print('{} {}/{} ({:.0f}%), {}, ETA: {:.0f}s     \r'
+                              .format('Training' if phase == TRAIN else 'Validating', total, len(self.datasets[phase]),
+                                      100.0 * total / len(self.datasets[phase]), term_log, eta), end='')
+                        
+                    elif phase == TEST:
+                        inputs = np.stack(inputs, axis=0)
+                        inputs = torch.from_numpy(inputs)
+                        inputs = self.to_variable(inputs)
+                        embeddings = self.model(inputs)
+                        prediction = self.classifier.predict(embeddings.cpu().detach().numpy())
+                        print(prediction)
+                        print(targets)
+                        accuracy = sum(prediction == targets) 
+                        total += targets.shape[0]
+                        
+                        vars = {'loss': 0,
+                                'true_accept': 0,
+                                'false_accept': 0,
+                                'accuracy': accuracy.item()}
+
+
+                        running_vars = {var: running_vars[var] + vars[var] for var in self.log_vars}
+                    
+                        eta = (time.time() - epoch_since) / total * (len(self.datasets[phase]) - total)
+
+                        term_log = ', '.join(['{}: {:.4f}'.format(var, running_vars[var] / float(total)) for var in self.log_vars[0:3]])
+                        
+                        term_log = ', '.join([term_log, '{}: {:.4f}'.format(self.main_var, running_vars[self.main_var] / (1.0*total))])
+                        print('{} {}/{} ({:.0f}%), {}, ETA: {:.0f}s     \r'
+                              .format('Training' if phase == TRAIN else 'Validating', total, len(self.datasets[phase]),
+                                      100.0 * total / len(self.datasets[phase]), term_log, eta), end='')
+                
                 
                 epoch_vars = {var: running_vars[var] / float(total) for var in self.log_vars[0:3]}
-                epoch_vars[self.main_var] = running_vars[self.main_var] / (3*float(total))
+                if phase == TRAIN:
+                    epoch_vars[self.main_var] = running_vars[self.main_var] / (3*float(total))
+                elif phase == TEST:
+                    epoch_vars[self.main_var] = running_vars[self.main_var] / (float(total))
 
                 if phase == TEST:
                     for var in self.log_vars:
@@ -308,6 +339,8 @@ class Trainer(object):
                         
                 if TEST in self.phases and phase == TRAIN:
                     self.classifier.fit(X,y)
+                    X = []
+                    y = []
                 
                 print()
                 term_log = ', '.join(['{}: {:.4f}'.format(var, epoch_vars[var]) for var in self.log_vars])

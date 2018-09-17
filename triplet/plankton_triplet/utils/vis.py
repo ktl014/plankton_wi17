@@ -159,7 +159,7 @@ def plotPoseVarKLDiv(filepath, metric, datasets, ylbl=None):
     cb1.set_ticklabels(classes)
     plt.savefig(filepath + '/posevar.png')
 
-def showConfusionMatrix(filepath, cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+def showConfusionMatrix(filepath, cm, classes, checkpoint=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
     """
         This function prints and plots the confusion matrix.
         Normalization can be applied by setting `normalize=True`.
@@ -185,7 +185,7 @@ def showConfusionMatrix(filepath, cm, classes, normalize=False, title='Confusion
     plt.tight_layout ()
     plt.ylabel ('True label')
     plt.xlabel ('Predicted label')
-    plt.savefig(filepath + '/cmatrix.png')
+    plt.savefig(filepath + '/cmatrix' + '_' + checkpoint[:-7] + 'png')
 
 def plotPoseOrientation(filepath, predictions, gtruth, poseXY, classAccuracy, classIdx, specimenIDs):
     numCols = 8
