@@ -180,11 +180,11 @@ class Evaluator(object):
         print()
         X = None
         y = None
-        
-                        
                         
     def generator(self):
         phase = TEST
+        t1 = time.time()
+        total = 0
         with torch.no_grad():
             for i, data in enumerate(self.dataset[phase].dataloader):
                 inputs = data['views']
@@ -199,6 +199,12 @@ class Evaluator(object):
                 
                 pred_classes = []
                 pred_classes.extend(prediction)
+                
+                total += targets.shape[0]
+                eta = (time.time () - t1) / total * (len (self.dataset[phase]) - total)
+                print ('=> Classifiying Test Samples {}/{} ({:.0f}%), ETA: {:.0f}s     \r'
+                       .format (total, len (self.dataset[phase]),
+                                100.0 * total / len (self.dataset[phase]), eta),end='')
                 yield {
                     'pred_classes': pred_classes,
                     'gt_classes': targets,
@@ -298,32 +304,32 @@ if __name__ == '__main__':
         gt_classes, pred_classes, views = [], [], []
 
         """ UNCOMMENT & TAB SECTION BELOW TO EVALUATE EACH CHECKPOINT"""
-        for i, checkpoint in enumerate(evaluator.get_checkpoints()):
-            #defaultCheckPoint = next(evaluator.get_checkpoints(), 0)
-            evaluator.set_classifier(checkpoint)
-            for data in evaluator.generator():
-                gt_classes.append(data['gt_classes'])
-                pred_classes.append(data['pred_classes'])
-                views.append(data['view_ids'])
-        
+#         for i, checkpoint in enumerate(evaluator.get_checkpoints()):
+        defaultCheckPoint = next(evaluator.get_checkpoints(), 0)
+        evaluator.set_classifier(defaultCheckPoint)
+        for data in evaluator.generator():
+            gt_classes.append(data['gt_classes'])
+            pred_classes.append(data['pred_classes'])
+            views.append(data['view_ids'])
+
 #         with open('/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/eval_debug/gtCls.p',"r") as f1:
 #             gt_classes = pickle.load(f1)
 #         with open('/data6/zzuberi/plankton_wi17/pose/poseprediction_torch/records/eval_debug/predCls.p',"r") as f2:
 #             pred_classes = pickle.load(f2)
-        
+
 #         if DEBUG:
 #             root = '/data5/lekevin/plankton/poseprediction/poseprediction_torch/'
 #             gt_classes = pickle.load(open(root + 'tmp/gtCls.p', "rb"))
 #             gt_classes = [gt_classes[i].data for i, idx in enumerate(gt_classes)]
 #             pred_classes = pickle.load(open(root + 'tmp/predCls.p', "rb"))
 
-            print()
-            print('=> Evaluation Results')
-            evaluator.score_classification(pred=pred_classes, gtruth=gt_classes, view_id=views,checkpoint=checkpoint)
-            print ()
-            print ('Time Elapsed: {:.0f}s'
-                   .format (time.time () - dataset_since))
-            print ()
+        print()
+        print('=> Evaluation Results')
+        evaluator.score_classification(pred=pred_classes, gtruth=gt_classes, view_id=views,checkpoint=defaultCheckPoint)
+        print ()
+        print ('Time Elapsed: {:.0f}s'
+               .format (time.time () - dataset_since))
+        print ()
         #evaluator.compute_posevariabilityDataset()
 #     evaluator.score_entiredataset()
 

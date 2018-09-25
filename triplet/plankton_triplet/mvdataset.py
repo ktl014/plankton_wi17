@@ -9,6 +9,7 @@ import numpy as np
 from numpy.random import choice
 import pandas as pd
 from skimage import io
+import random
 
 
 class MultiViewPlanktonDataSet(Dataset):
@@ -98,7 +99,7 @@ class TripletPlanktonDataSet(Dataset):
 
         return classes, class_to_idx
 
-    def __init__(self, csv_file, img_dir, transform=None, amp=1., std=3., output_size=48, views=12):
+    def __init__(self, csv_file, img_dir, transform=None, amp=1., std=3., output_size=48, views=12, samples=70):
         assert isinstance(output_size, (int, tuple))
 
         self.data = pd.read_csv(csv_file)
@@ -108,6 +109,7 @@ class TripletPlanktonDataSet(Dataset):
         self.amp = amp
         self.std = std
         self.views = views
+        self.samples = samples
 
         self.level = FAMILY
         self.classes = sorted(self.data[self.level].unique())
@@ -172,26 +174,28 @@ class TripletPlanktonDataSet(Dataset):
             spec_view = spec_views[spec_to_ind[spec]].copy(True)
             pos_view = spec_views[spec_to_ind[spec]]
             neg_specs = specimens[specimens != spec]
-            iters = len(spec_view)/self.views
-            for i in range(iters):
+            for _ in range(self.samples):
                 triplet = []
-                #Anchor subset
-                subset = choice(spec_view.index,size=self.views,replace=False)
-                triplet.append(subset)
-                spec_view = spec_view.drop(index=subset)
-                #Pos subset
-                triplet.append(choice(pos_view.index,size=self.views,replace=False))
-                #Neg subset
+                triplet.append(self.random_combination(spec_view.index,self.views))
+                triplet.append(self.random_combination(spec_view.index,self.views))
                 neg_spec = choice(neg_specs)
                 neg_view = spec_views[spec_to_ind[neg_spec]]
-                triplet.append(choice(neg_view.index,size=self.views,replace=False))
+                triplet.append(self.random_combination(neg_view.index,self.views))
                 
                 partition.append(triplet)
         return partition
     
+    def random_combination(self,iterable, r):
+        "Random selection from itertools.combinations(iterable, r)"
+        pool = tuple(iterable)
+        n = len(pool)
+        indices = sorted(random.sample(xrange(n), r))
+        return tuple(pool[i] for i in indices)
+    
+    
 class DatasetWrapper(object):
     def __init__(self, phase, csv_filename, img_dir, input_size,
-                 batch_size, amp, std, output_size=48, shuffle=True,views=12):
+                 batch_size, amp, std, output_size=48, shuffle=True,views=12,samples=70):
 
         self.phase = phase
         self.csv_filename = csv_filename
@@ -228,7 +232,7 @@ class DatasetWrapper(object):
                                            amp=self.amp,
                                            std=self.std,
                                            output_size=self.output_size,
-                                           views=views)
+                                           views=views,samples=samples)
         elif phase == TEST:
             self.dataset = MultiViewPlanktonDataSet(csv_file=self.csv_filename,
                                        img_dir=self.img_dir,
